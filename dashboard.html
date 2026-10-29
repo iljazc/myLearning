@@ -568,18 +568,23 @@ case"dell":{
 
   write("l"+id, async function(){
 
-    const { error } = await sb
-      .from("learners")
-      .delete()
-      .eq("id", id);
+  console.log("Deleting learner:", id);
 
-    if(error){
-      console.error(error);
-      throw error;
-    }
+  const { data, error } = await sb
+    .from("learners")
+    .delete()
+    .eq("id", id)
+    .select();
 
-    return true;
-  });
+  console.log("DELETE DATA:", data);
+  console.log("DELETE ERROR:", error);
+
+  if(error){
+    throw error;
+  }
+
+  return true;
+});
 
   toast("Learner removed.");
   break;
