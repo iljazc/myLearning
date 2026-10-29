@@ -585,18 +585,18 @@ document.addEventListener("change",function(ev){
   }
 
   // Load learners
-  const { data: learnersData, error: learnersError } =
-    await sb
-      .from("learners")
-      .select("*");
-
   if (learnersError) {
-    console.error("Learners error:", learnersError);
-  } else {
-    S.learners = learnersData || [];
-    S.learnersReady = true;
-  }
+  console.error("Learners error:", learnersError);
+} else {
 
+  S.learners = (learnersData || []).map(function(l){
+    return Object.assign({}, l, {
+      group: l.learner_group || ""
+    });
+  });
+
+  S.learnersReady = true;
+}
   render();
 
 })();
