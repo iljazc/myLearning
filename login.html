@@ -60,8 +60,8 @@ button{
 
 <script>
 
-const supabase = window.supabase.createClient(
-    "Yhttps://aynyitslikigfbwacxnt.supabase.co/rest/v1/",
+const sb = window.supabase.createClient(
+    "Yhttps://aynyitslikigfbwacxnt.supabase.co",
     "Ysb_publishable_HvPDMaM4cZ3L-LwqUAOnRw_7Q7efv7H"
 );
 
@@ -74,7 +74,7 @@ async function login(){
         document.getElementById("password").value;
 
     const { error } =
-        await supabase.auth.signInWithPassword({
+        await sb.auth.signInWithPassword({
             email,
             password
         });
