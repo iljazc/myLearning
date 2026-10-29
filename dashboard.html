@@ -548,7 +548,42 @@ document.addEventListener("click",function(ev){
     case"cancelimp":S.pending=null;render();break;
     case"tpl":templateCsv();break;
     case"addnote":{var tx=(S.draft.note||"").trim();if(!tx)return;var l3=L(d.id);if(!l3)return;var notes=(l3.notes||[]).concat([{t:tx.slice(0,1000),ts:Date.now(),by:S.me}]).slice(-100);l3.notes=notes;S.draft.note="";render();upd(l3.id,{notes:notes});break}
-    case"dell":{if(S.arm!=="dell"+d.id){S.arm="dell"+d.id;render();return}S.arm=null;S.sel=null;var id=d.id;S.learners=S.learners.filter(function(x){return x.id!==id});render();write("l"+id, async function(){return DB.doc("learners/"+id).delete()});toast("Learner removed.");break}
+case"dell":{
+  if(S.arm!=="dell"+d.id){
+    S.arm="dell"+d.id;
+    render();
+    return;
+  }
+
+  S.arm=null;
+  S.sel=null;
+
+  var id=d.id;
+
+  S.learners=S.learners.filter(function(x){
+    return x.id!==id;
+  });
+
+  render();
+
+  write("l"+id, async function(){
+
+    const { error } = await sb
+      .from("learners")
+      .delete()
+      .eq("id", id);
+
+    if(error){
+      console.error(error);
+      throw error;
+    }
+
+    return true;
+  });
+
+  toast("Learner removed.");
+  break;
+}
     case"adda":{var ti=$("#na-t").value.trim();if(!ti){toast("Give the activity a title.",true);return}var c2=JSON.parse(JSON.stringify(S.cfg));c2.activities.push({id:uid(),unit:$("#na-u").value,title:ti.slice(0,120)});saveCfg(c2);toast("Activity added.");break}
     case"addt":{var tt=$("#nt-t").value.trim(),mx=+$("#nt-m").value,ps=+$("#nt-p").value;if(!tt){toast("Give the assessment a title.",true);return}if(!(mx>0)||!(ps>=0)||ps>mx){toast("Check the marks. The pass mark can't be more than the total.",true);return}var c3=JSON.parse(JSON.stringify(S.cfg));c3.assessments.push({id:uid(),unit:$("#nt-u").value,title:tt.slice(0,120),max:mx,pass:ps});saveCfg(c3);toast("Assessment added.");break}
     case"export":exportCsv();break;
