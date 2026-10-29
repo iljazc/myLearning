@@ -392,7 +392,39 @@ function importHub(text){
     var hub={studied:+r[iS]||0,slides:+r[iV]||0,quizzes:+r[iQ]||0,avg:r[iA]===""||r[iA]==null?"":+r[iA],done:+r[iD]||0,total:+r[iT]||0,lastActive:la||0,at:now};
     var cur=have[name.toLowerCase()];
     if(cur){upd(cur.id,{hub:hub})}
-    else{var id=uid();added++;write("l"+id,function(){return DB.doc("learners/"+id).set({name:name.slice(0,80),group:"",units:{},acts:{},tests:{},notes:[],target:"",hub:hub,created:now,updated:now})})}
+else {
+  var id = uid();
+  added++;
+
+  write("l" + id, async function () {
+
+    const { error } = await sb
+      .from("learners")
+      .insert([
+        {
+          id: id,
+          name: name.slice(0, 80),
+          learner_group: "",
+          units: {},
+          acts: {},
+          tests: {},
+          notes: [],
+          target: "",
+          hub: hub,
+          created: now,
+          updated: now
+        }
+      ]);
+
+    if (error) {
+      console.error(error);
+      throw error;
+    }
+
+    return true;
+  });
+
+}
     n++;
   });
   toast("Imported "+n+" learners"+(added?" ("+added+" new)":"")+".");
