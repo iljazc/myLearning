@@ -459,9 +459,11 @@ document.addEventListener("change",function(ev){
   }
 
   S.ready = true;
+  S.me = session.user.id;
 
   console.log("Logged in:", session.user.email);
 
+  // Load config
   const { data: configData, error: configError } =
     await sb
       .from("config")
@@ -470,14 +472,26 @@ document.addEventListener("change",function(ev){
       .single();
 
   if (configError) {
-    console.error(configError);
-    return;
+    console.error("Config error:", configError);
+  } else {
+    S.cfg = {
+      activities: configData.activities || [],
+      assessments: configData.assessments || []
+    };
   }
 
-  S.cfg = {
-    activities: configData.activities || [],
-    assessments: configData.assessments || []
-  };
+  // Load learners
+  const { data: learnersData, error: learnersError } =
+    await sb
+      .from("learners")
+      .select("*");
+
+  if (learnersError) {
+    console.error("Learners error:", learnersError);
+  } else {
+    S.learners = learnersData || [];
+    S.learnersReady = true;
+  }
 
   render();
 
