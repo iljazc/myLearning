@@ -110,11 +110,12 @@ ul{margin:0;padding:0}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-const supabase = window.supabase.createClient(
-  "https://aynyitslikigfbwacxnt.supabase.co/rest/v1/",
+const sb = window.supabase.createClient(
+ "https://aynyitslikigfbwacxnt.supabase.co/rest/v1/",
   "sb_publishable_HvPDMaM4cZ3L-LwqUAOnRw_7Q7efv7H"
 );
 </script>
+
 
 <script>
 "use strict";
@@ -450,7 +451,7 @@ document.addEventListener("change",function(ev){
 
   const {
     data: { session }
-  } = await supabase.auth.getSession();
+  } = await sb.auth.getSession();
 
   if (!session) {
     window.location.href = "login.html";
