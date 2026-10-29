@@ -179,13 +179,84 @@ function plan(rows){
   return{fresh:fresh,upd:upd,dup:dup};
 }
 async function applyPlan(pl){
-  var jobs=pl.fresh.map(function(r){return function(){return DB.doc("learners/"+uid()).set({name:r.name,group:r.group,units:{},acts:{},tests:{},notes:[],target:"",created:Date.now(),updated:Date.now()})}})
-    .concat(pl.upd.map(function(r){return function(){return DB.doc("learners/"+r.id).update({group:r.group,updated:Date.now()})}}));
+
+  var jobs = pl.fresh.map(function(r){
+    return async function(){
+
+      const { error } = await sb
+        .from("learners")
+        .insert([
+          {
+            id: uid(),
+            name: r.name,
+            learner_group: r.group,
+            units: {},
+            acts: {},
+            tests: {},
+            notes: [],
+            target: "",
+            created: Date.now(),
+            updated: Date.now()
+          }
+        ]);
+
+      if(error){
+        console.error(error);
+        throw error;
+      }
+    };
+  })
+
+  .concat(
+
+    pl.upd.map(function(r){
+      return async function(){
+
+        const { error } = await sb
+          .from("learners")
+          .update({
+            learner_group: r.group,
+            updated: Date.now()
+          })
+          .eq("id", r.id);
+
+        if(error){
+          console.error(error);
+          throw error;
+        }
+      };
+    })
+
+  );
+
   var i=0,failed=0;
-  async function worker(){while(i<jobs.length){var j=jobs[i++];try{await j()}catch(e){failed++;if(e&&e.code==="resource_exhausted"){await new Promise(function(r){setTimeout(r,800)});try{await j();failed--}catch(x){}}}}}
-  S.busy=true;render();
-  await Promise.all([worker(),worker(),worker(),worker()]);
-  S.busy=false;render();
+
+  async function worker(){
+    while(i<jobs.length){
+      var j=jobs[i++];
+
+      try{
+        await j();
+      }catch(e){
+        console.error(e);
+        failed++;
+      }
+    }
+  }
+
+  S.busy=true;
+  render();
+
+  await Promise.all([
+    worker(),
+    worker(),
+    worker(),
+    worker()
+  ]);
+
+  S.busy=false;
+  render();
+
   return failed;
 }
 async function inflate(u8,method){
@@ -392,39 +463,7 @@ function importHub(text){
     var hub={studied:+r[iS]||0,slides:+r[iV]||0,quizzes:+r[iQ]||0,avg:r[iA]===""||r[iA]==null?"":+r[iA],done:+r[iD]||0,total:+r[iT]||0,lastActive:la||0,at:now};
     var cur=have[name.toLowerCase()];
     if(cur){upd(cur.id,{hub:hub})}
-else {
-  var id = uid();
-  added++;
-
-  write("l" + id, async function () {
-
-    const { error } = await sb
-      .from("learners")
-      .insert([
-        {
-          id: id,
-          name: name.slice(0, 80),
-          learner_group: "",
-          units: {},
-          acts: {},
-          tests: {},
-          notes: [],
-          target: "",
-          hub: hub,
-          created: now,
-          updated: now
-        }
-      ]);
-
-    if (error) {
-      console.error(error);
-      throw error;
-    }
-
-    return true;
-  });
-
-}
+    else{var l={id:genId(),name:name,hub:hub};S.learners.push(l);upd(l.id,{name:l.name,hub:l.hub});added++}
     n++;
   });
   toast("Imported "+n+" learners"+(added?" ("+added+" new)":"")+".");
@@ -455,7 +494,7 @@ document.addEventListener("click",function(ev){
     case"cancelimp":S.pending=null;render();break;
     case"tpl":templateCsv();break;
     case"addnote":{var tx=(S.draft.note||"").trim();if(!tx)return;var l3=L(d.id);if(!l3)return;var notes=(l3.notes||[]).concat([{t:tx.slice(0,1000),ts:Date.now(),by:S.me}]).slice(-100);l3.notes=notes;S.draft.note="";render();upd(l3.id,{notes:notes});break}
-    case"dell":{if(S.arm!=="dell"+d.id){S.arm="dell"+d.id;render();return}S.arm=null;S.sel=null;var id=d.id;S.learners=S.learners.filter(function(x){return x.id!==id});render();write("l"+id,function(){return DB.doc("learners/"+id).delete()});toast("Learner removed.");break}
+    case"dell":{if(S.arm!=="dell"+d.id){S.arm="dell"+d.id;render();return}S.arm=null;S.sel=null;var id=d.id;S.learners=S.learners.filter(function(x){return x.id!==id});render();write("l"+id, async function(){return DB.doc("learners/"+id).delete()});toast("Learner removed.");break}
     case"adda":{var ti=$("#na-t").value.trim();if(!ti){toast("Give the activity a title.",true);return}var c2=JSON.parse(JSON.stringify(S.cfg));c2.activities.push({id:uid(),unit:$("#na-u").value,title:ti.slice(0,120)});saveCfg(c2);toast("Activity added.");break}
     case"addt":{var tt=$("#nt-t").value.trim(),mx=+$("#nt-m").value,ps=+$("#nt-p").value;if(!tt){toast("Give the assessment a title.",true);return}if(!(mx>0)||!(ps>=0)||ps>mx){toast("Check the marks. The pass mark can't be more than the total.",true);return}var c3=JSON.parse(JSON.stringify(S.cfg));c3.assessments.push({id:uid(),unit:$("#nt-u").value,title:tt.slice(0,120),max:mx,pass:ps});saveCfg(c3);toast("Assessment added.");break}
     case"export":exportCsv();break;
