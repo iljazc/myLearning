@@ -207,13 +207,17 @@ function saveCfg(next){
 
   return write("cfg", async function(){
 
-    const { error } = await sb
-      .from("config")
-      .update({
-        activities: next.activities || [],
-        assessments: next.assessments || []
-      })
-      .eq("id", "main");
+    const { data, error } = await sb
+  .from("config")
+  .update({
+    activities: next.activities || [],
+    assessments: next.assessments || []
+  })
+  .eq("id", "main")
+  .select();
+
+console.log("CONFIG DATA:", data);
+console.log("CONFIG ERROR:", error);
 
     if(error){
       console.error(error);
