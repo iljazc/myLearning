@@ -160,9 +160,14 @@ function summary(l){
 
 /* ---------- writes ---------- */
 function write(key,fn){
-  var p=(queue[key]||Promise.resolve()).then(fn).catch(function(e){toast(errMsg(e),true)});
-  queue[key]=p;return p;
+  var p=(queue[key]||Promise.resolve()).then(fn).catch(function(e){
+    console.error("WRITE ERROR:", e);
+    toast(errMsg(e),true);
+  });
+  queue[key]=p;
+  return p;
 }
+
 function upd(id,data){
 
   return write("l"+id, async function(){
@@ -187,7 +192,7 @@ function upd(id,data){
       console.error(error);
       throw error;
     }
-
+    console.log("UPDATE SUCCESS", payload);
     return true;
   });
 
