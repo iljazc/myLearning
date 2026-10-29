@@ -1,5 +1,4 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style> 
-</head><body>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style> </head><body>
 <title>Learner Progress Tracker</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -107,6 +106,15 @@ ul{margin:0;padding:0}
   <main id="main"><div class="empty"><b>Loading</b>Opening the tracker.</div></main>
 </div>
 <div id="toast" class="toast" hidden role="status"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+const supabase = window.supabase.createClient(
+  "https://aynyitslikigfbwacxnt.supabase.co/rest/v1/",
+  "sb_publishable_HvPDMaM4cZ3L-LwqUAOnRw_7Q7efv7H"
+);
+</script>
 
 <script>
 "use strict";
@@ -439,24 +447,22 @@ document.addEventListener("change",function(ev){
 
 /* ---------- start ---------- */
 (async function(){
-  var c=window.claude;
-  try{USER=c&&c.use?await c.use("user"):null}catch(e){}
-  try{DB=c&&c.use?await c.use("db"):null}catch(e){}
-  try{DL=c&&c.use?await c.use("downloads"):null}catch(e){}
-  S.ready=true;
-  if(!DB){S.noDb=true;render();return}
-  var canEdit=false;try{canEdit=USER?await USER.canEdit():false}catch(e){}
-  if(!canEdit){S.locked=true;render();return}
-  try{S.me=USER&&USER.id?await USER.id():null}catch(e){}
-  var names=function(){
-    var ids={};S.learners.forEach(function(l){(l.notes||[]).forEach(function(n){if(n.by)ids[n.by]=1})});
-    var list=Object.keys(ids);if(!list.length||!USER||!USER.profiles)return;
-    USER.profiles(list).then(function(p){var ch=false;list.forEach(function(i){var n=p[i]&&p[i].name;if(n&&S.names[i]!==n){S.names[i]=n;ch=true}});if(ch)render()}).catch(function(){});
-  };
-  DB.doc("config/main").onSnapshot(function(s){var d=s.exists?s.data():{};S.cfg={activities:Array.isArray(d.activities)?d.activities:[],assessments:Array.isArray(d.assessments)?d.assessments:[]};render()},function(){});
-  DB.collection("learners").onSnapshot(function(s){S.learners=s.docs.map(function(x){return Object.assign({},x.data(),{id:x.id})});S.learnersReady=true;names();render()},function(){S.locked=true;render()});
-  render();
+
+  const {
+    data: { session }
+  } = await supabase.auth.getSession();
+
+  if (!session) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  S.ready = true;
+
+  console.log("Logged in:", session.user.email);
+
 })();
+
 </script>
 
 </body></html>
