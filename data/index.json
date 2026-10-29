@@ -1,192 +1,332 @@
-[
-  {
-    "id": "201-01",
-    "unit": "201",
-    "title": "Health and safety legislation"
-  },
-  {
-    "id": "201-06",
-    "unit": "201",
-    "title": "Safety signs and symbols"
-  },
-  {
-    "id": "201-07",
-    "unit": "201",
-    "title": "Accident reporting"
-  },
-  {
-    "id": "201-10",
-    "unit": "201",
-    "title": "Hazardous materials and substances"
-  },
-  {
-    "id": "201-11",
-    "unit": "201",
-    "title": "Dealing with asbestos and RCS"
-  },
-  {
-    "id": "201-14",
-    "unit": "201",
-    "title": "Isolation and lock-off procedure"
-  },
-  {
-    "id": "201-16",
-    "unit": "201",
-    "title": "Structure and roles of individuals"
-  },
-  {
-    "id": "202-01",
-    "unit": "202",
-    "title": "Standard units of measurement"
-  },
-  {
-    "id": "202-06",
-    "unit": "202",
-    "title": "Electromotive force and voltage"
-  },
-  {
-    "id": "202-07",
-    "unit": "202",
-    "title": "Resistance and resistivity"
-  },
-  {
-    "id": "202-10",
-    "unit": "202",
-    "title": "Conductors and insulators"
-  },
-  {
-    "id": "202-11",
-    "unit": "202",
-    "title": "Types and connection of instruments"
-  },
-  {
-    "id": "202-16",
-    "unit": "202",
-    "title": "Ac voltage generation"
-  },
-  {
-    "id": "202-17",
-    "unit": "202",
-    "title": "Transformers"
-  },
-  {
-    "id": "202-20",
-    "unit": "202",
-    "title": "Transistors and signal amplification"
-  },
-  {
-    "id": "203-01",
-    "unit": "203",
-    "title": "Common hand tools"
-  },
-  {
-    "id": "203-05",
-    "unit": "203",
-    "title": "Socket circuits"
-  },
-  {
-    "id": "203-06",
-    "unit": "203",
-    "title": "PVC cables"
-  },
-  {
-    "id": "203-07",
-    "unit": "203",
-    "title": "Steel wire armoured cable (SWA)"
-  },
-  {
-    "id": "203-10",
-    "unit": "203",
-    "title": "Steel conduit systems"
-  },
-  {
-    "id": "203-11",
-    "unit": "203",
-    "title": "Steel conduit tools"
-  },
-  {
-    "id": "203-13",
-    "unit": "203",
-    "title": "Cable selection (2)"
-  },
-  {
-    "id": "203-16",
-    "unit": "203",
-    "title": "Safe isolation"
-  },
-  {
-    "id": "203-17",
-    "unit": "203",
-    "title": "Testing insulation resistance"
-  },
-  {
-    "id": "203-20",
-    "unit": "203",
-    "title": "Cable tray, basket and ladder systems"
-  },
-  {
-    "id": "203-21",
-    "unit": "203",
-    "title": "Connection and termination"
-  },
-  {
-    "id": "203-26",
-    "unit": "203",
-    "title": "Installation methods"
-  },
-  {
-    "id": "204-02",
-    "unit": "204",
-    "title": "Single phase incoming supply (up to 100 A)"
-  },
-  {
-    "id": "204-03",
-    "unit": "204",
-    "title": "Common earthing arrangements"
-  },
-  {
-    "id": "204-04",
-    "unit": "204",
-    "title": "Protective devices"
-  },
-  {
-    "id": "204-05",
-    "unit": "204",
-    "title": "Protective devices \u2013 co-ordination"
-  },
-  {
-    "id": "204-08",
-    "unit": "204",
-    "title": "Protection against electric shock: fault protection"
-  },
-  {
-    "id": "204-09",
-    "unit": "204",
-    "title": "Earth fault loop path"
-  },
-  {
-    "id": "204-12",
-    "unit": "204",
-    "title": "Diversity and final circuits"
-  },
-  {
-    "id": "204-13",
-    "unit": "204",
-    "title": "Cable selection"
-  },
-  {
-    "id": "204-14",
-    "unit": "204",
-    "title": "Regulations and guidance publications"
-  },
-  {
-    "id": "204-15",
-    "unit": "204",
-    "title": "Technical data"
-  },
-  {
-    "id": "204-17",
-    "unit": "204",
-    "title": "Client information"
-  }
-]
+{
+  "units": [
+    {
+      "code": "201",
+      "title": "Unit 201",
+      "decks": [
+        {
+          "id": "201-01",
+          "title": "Health and safety legislation",
+          "slides": 24,
+          "cards": 0,
+          "questions": 0,
+          "sections": 0
+        },
+        {
+          "id": "201-06",
+          "title": "Safety signs and symbols",
+          "slides": 14,
+          "cards": 0,
+          "questions": 0,
+          "sections": 0
+        },
+        {
+          "id": "201-07",
+          "title": "Accident reporting",
+          "slides": 15,
+          "cards": 0,
+          "questions": 0,
+          "sections": 0
+        },
+        {
+          "id": "201-10",
+          "title": "Hazardous materials and substances",
+          "slides": 12,
+          "cards": 0,
+          "questions": 0,
+          "sections": 0
+        },
+        {
+          "id": "201-11",
+          "title": "Dealing with asbestos and RCS",
+          "slides": 14,
+          "cards": 0,
+          "questions": 0,
+          "sections": 0
+        },
+        {
+          "id": "201-14",
+          "title": "Isolation and lock-off procedure",
+          "slides": 30,
+          "cards": 0,
+          "questions": 0,
+          "sections": 0
+        },
+        {
+          "id": "201-16",
+          "title": "Structure and roles of individuals",
+          "slides": 24,
+          "cards": 0,
+          "questions": 0,
+          "sections": 0
+        }
+      ]
+    },
+    {
+      "code": "202",
+      "title": "Unit 202",
+      "decks": [
+        {
+          "id": "202-01",
+          "title": "Standard units of measurement",
+          "slides": 13,
+          "cards": 0,
+          "questions": 0,
+          "sections": 0
+        },
+        {
+          "id": "202-06",
+          "title": "Electromotive force and voltage",
+          "slides": 13,
+          "cards": 0,
+          "questions": 0,
+          "sections": 0
+        },
+        {
+          "id": "202-07",
+          "title": "Resistance and resistivity",
+          "slides": 18,
+          "cards": 0,
+          "questions": 0,
+          "sections": 0
+        },
+        {
+          "id": "202-10",
+          "title": "Conductors and insulators",
+          "slides": 18,
+          "cards": 0,
+          "questions": 0,
+          "sections": 0
+        },
+        {
+          "id": "202-11",
+          "title": "Types and connection of instruments",
+          "slides": 13,
+          "cards": 0,
+          "questions": 0,
+          "sections": 0
+        },
+        {
+          "id": "202-16",
+          "title": "Ac voltage generation",
+          "slides": 15,
+          "cards": 0,
+          "questions": 0,
+          "sections": 0
+        },
+        {
+          "id": "202-17",
+          "title": "Transformers",
+          "slides": 30,
+          "cards": 0,
+          "questions": 0,
+          "sections": 0
+        },
+        {
+          "id": "202-20",
+          "title": "Transistors and signal amplification",
+          "slides": 15,
+          "cards": 0,
+          "questions": 0,
+          "sections": 0
+        }
+      ]
+    },
+    {
+      "code": "203",
+      "title": "Unit 203",
+      "decks": [
+        {
+          "id": "203-01",
+          "title": "Common hand tools",
+          "slides": 24,
+          "cards": 0,
+          "questions": 0,
+          "sections": 0
+        },
+        {
+          "id": "203-05",
+          "title": "Socket circuits",
+          "slides": 6,
+          "cards": 0,
+          "questions": 0,
+          "sections": 0
+        },
+        {
+          "id": "203-06",
+          "title": "PVC cables",
+          "slides": 7,
+          "cards": 0,
+          "questions": 0,
+          "sections": 0
+        },
+        {
+          "id": "203-07",
+          "title": "Steel wire armoured cable (SWA)",
+          "slides": 6,
+          "cards": 0,
+          "questions": 0,
+          "sections": 0
+        },
+        {
+          "id": "203-10",
+          "title": "Steel conduit systems",
+          "slides": 7,
+          "cards": 0,
+          "questions": 0,
+          "sections": 0
+        },
+        {
+          "id": "203-11",
+          "title": "Steel conduit tools",
+          "slides": 7,
+          "cards": 0,
+          "questions": 0,
+          "sections": 0
+        },
+        {
+          "id": "203-13",
+          "title": "Cable selection (2)",
+          "slides": 10,
+          "cards": 0,
+          "questions": 0,
+          "sections": 0
+        },
+        {
+          "id": "203-16",
+          "title": "Safe isolation",
+          "slides": 5,
+          "cards": 0,
+          "questions": 0,
+          "sections": 0
+        },
+        {
+          "id": "203-17",
+          "title": "Testing insulation resistance",
+          "slides": 6,
+          "cards": 0,
+          "questions": 0,
+          "sections": 0
+        },
+        {
+          "id": "203-20",
+          "title": "Cable tray, basket and ladder systems",
+          "slides": 9,
+          "cards": 0,
+          "questions": 0,
+          "sections": 0
+        },
+        {
+          "id": "203-21",
+          "title": "Connection and termination",
+          "slides": 10,
+          "cards": 0,
+          "questions": 0,
+          "sections": 0
+        },
+        {
+          "id": "203-26",
+          "title": "Installation methods",
+          "slides": 12,
+          "cards": 0,
+          "questions": 0,
+          "sections": 0
+        }
+      ]
+    },
+    {
+      "code": "204",
+      "title": "Unit 204",
+      "decks": [
+        {
+          "id": "204-02",
+          "title": "Single phase incoming supply (up to 100 A)",
+          "slides": 22,
+          "cards": 0,
+          "questions": 0,
+          "sections": 0
+        },
+        {
+          "id": "204-03",
+          "title": "Common earthing arrangements",
+          "slides": 15,
+          "cards": 0,
+          "questions": 0,
+          "sections": 0
+        },
+        {
+          "id": "204-04",
+          "title": "Protective devices",
+          "slides": 27,
+          "cards": 0,
+          "questions": 0,
+          "sections": 0
+        },
+        {
+          "id": "204-05",
+          "title": "Protective devices \u2013 co-ordination",
+          "slides": 11,
+          "cards": 0,
+          "questions": 0,
+          "sections": 0
+        },
+        {
+          "id": "204-08",
+          "title": "Protection against electric shock: fault protection",
+          "slides": 26,
+          "cards": 0,
+          "questions": 0,
+          "sections": 0
+        },
+        {
+          "id": "204-09",
+          "title": "Earth fault loop path",
+          "slides": 9,
+          "cards": 0,
+          "questions": 0,
+          "sections": 0
+        },
+        {
+          "id": "204-12",
+          "title": "Diversity and final circuits",
+          "slides": 23,
+          "cards": 0,
+          "questions": 0,
+          "sections": 0
+        },
+        {
+          "id": "204-13",
+          "title": "Cable selection",
+          "slides": 19,
+          "cards": 0,
+          "questions": 0,
+          "sections": 0
+        },
+        {
+          "id": "204-14",
+          "title": "Regulations and guidance publications",
+          "slides": 16,
+          "cards": 0,
+          "questions": 0,
+          "sections": 0
+        },
+        {
+          "id": "204-15",
+          "title": "Technical data",
+          "slides": 9,
+          "cards": 0,
+          "questions": 0,
+          "sections": 0
+        },
+        {
+          "id": "204-17",
+          "title": "Client information",
+          "slides": 7,
+          "cards": 0,
+          "questions": 0,
+          "sections": 0
+        }
+      ]
+    }
+  ]
+}
