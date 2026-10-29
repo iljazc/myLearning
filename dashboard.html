@@ -163,7 +163,35 @@ function write(key,fn){
   var p=(queue[key]||Promise.resolve()).then(fn).catch(function(e){toast(errMsg(e),true)});
   queue[key]=p;return p;
 }
-function upd(id,data){return write("l"+id,function(){return DB.doc("learners/"+id).update(Object.assign({},data,{updated:Date.now()}))})}
+function upd(id,data){
+
+  return write("l"+id, async function(){
+
+    const payload = Object.assign(
+      {},
+      data,
+      { updated: Date.now() }
+    );
+
+    if (payload.group !== undefined) {
+      payload.learner_group = payload.group;
+      delete payload.group;
+    }
+
+    const { error } = await sb
+      .from("learners")
+      .update(payload)
+      .eq("id", id);
+
+    if (error) {
+      console.error(error);
+      throw error;
+    }
+
+    return true;
+  });
+
+}
 function saveCfg(next){S.cfg=next;render();return write("cfg",function(){return DB.doc("config/main").set(next)})}
 function plan(rows){
   var have={};S.learners.forEach(function(l){have[l.name.toLowerCase()]=l});
