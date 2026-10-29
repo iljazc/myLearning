@@ -200,7 +200,30 @@ const { error } = await sb
   });
 
 }
-function saveCfg(next){S.cfg=next;render();return write("cfg",function(){return DB.doc("config/main").set(next)})}
+function saveCfg(next){
+
+  S.cfg = next;
+  render();
+
+  return write("cfg", async function(){
+
+    const { error } = await sb
+      .from("config")
+      .update({
+        activities: next.activities || [],
+        assessments: next.assessments || []
+      })
+      .eq("id", "main");
+
+    if(error){
+      console.error(error);
+      throw error;
+    }
+
+    return true;
+  });
+
+}
 function plan(rows){
   var have={};S.learners.forEach(function(l){have[l.name.toLowerCase()]=l});
   var seen={},fresh=[],upd=[],dup=0;
