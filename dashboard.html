@@ -183,10 +183,13 @@ function upd(id,data){
       delete payload.group;
     }
 
-    const { error } = await sb
-      .from("learners")
-      .update(payload)
-      .eq("id", id);
+    console.log("UPDATING", id);
+console.log("PAYLOAD", JSON.stringify(payload, null, 2));
+
+const { error } = await sb
+  .from("learners")
+  .update(payload)
+  .eq("id", id);
 
     if (error) {
       console.error(error);
