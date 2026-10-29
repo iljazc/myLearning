@@ -585,6 +585,10 @@ document.addEventListener("change",function(ev){
   }
 
   // Load learners
+  const { data: learnersData, error: learnersError } =
+    await sb
+      .from("learners")
+      .select("*");
   if (learnersError) {
   console.error("Learners error:", learnersError);
 } else {
