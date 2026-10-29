@@ -1,0 +1,461 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Learner Progress Tracker</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Schibsted+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Layout: slim header with tabs, one working column; unit status matrix is the main view, learner detail replaces it. */
+:root{
+  --bg:#f1f4f3;--surface:#ffffff;--ink:#14211f;--muted:#586764;--line:#d9e1de;--accent:#0f6b5c;--accent-ink:#ffffff;--accent-soft:#dcefe9;
+  --done:#1d8a4a;--done-soft:#dff2e6;--prog:#b97a06;--prog-soft:#faedcf;--none:#8c9996;--none-soft:#e9eeec;--bad:#bf3b2f;--bad-soft:#fae1de;
+  --shadow:0 1px 2px rgba(20,33,31,.06),0 6px 18px rgba(20,33,31,.06);
+  --f-body:"Schibsted Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;--f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1816;--surface:#16231f;--ink:#e6efec;--muted:#9bada8;--line:#27393459;--line:#2a3c37;--accent:#4cc0a9;--accent-ink:#06201a;--accent-soft:#1a3a33;
+  --done:#52c57f;--done-soft:#173a26;--prog:#e5ae44;--prog-soft:#3b2e11;--none:#7f918c;--none-soft:#22312d;--bad:#ef7d70;--bad-soft:#41201c;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25);color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1816;--surface:#16231f;--ink:#e6efec;--muted:#9bada8;--line:#2a3c37;--accent:#4cc0a9;--accent-ink:#06201a;--accent-soft:#1a3a33;
+  --done:#52c57f;--done-soft:#173a26;--prog:#e5ae44;--prog-soft:#3b2e11;--none:#7f918c;--none-soft:#22312d;--bad:#ef7d70;--bad-soft:#41201c;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25);color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--f-body);padding-block:0 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1080px;margin:0 auto}
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px;padding:24px 0 14px}
+.eyebrow{font:500 12px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font:700 28px/1.1 var(--f-body);letter-spacing:-.02em;margin:4px 0 0;text-wrap:balance}
+h2{font:700 19px/1.2 var(--f-body);margin:0 0 12px;letter-spacing:-.01em}
+h3{font:600 15px/1.3 var(--f-body);margin:0}
+.tabs{display:flex;gap:4px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px}
+.tab{font:500 14px var(--f-body);border:0;background:none;color:var(--muted);padding:8px 14px;border-radius:9px;cursor:pointer}
+.tab[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}
+.tab:hover:not([aria-selected="true"]){color:var(--ink)}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px}
+.stack{display:grid;gap:16px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.sp{flex:1}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:9px;padding:8px 14px;cursor:pointer;font-weight:500}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.sm{padding:5px 10px;font-size:13px}
+.btn.bad{color:var(--bad);border-color:var(--bad)}
+.btn[disabled]{opacity:.5;cursor:default}
+.in{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:9px;padding:9px 11px}
+textarea.in{min-height:84px;resize:vertical}
+label.l{display:block;font:500 12px var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:2px}
+.tile b{font:700 34px/1 var(--f-body);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.tile span{color:var(--muted);font-size:13px}
+.tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{font:500 11.5px var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted);text-align:left;padding:11px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+td.n{font-variant-numeric:tabular-nums;white-space:nowrap}
+.lname{background:none;border:0;padding:0;font-weight:600;cursor:pointer;text-align:left;color:var(--ink)}
+.lname:hover{color:var(--accent);text-decoration:underline}
+.sub{color:var(--muted);font-size:13px}
+.chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 10px;font:500 12px var(--f-mono);border:1px solid transparent;white-space:nowrap}
+.chip.d{background:var(--done-soft);color:var(--done)}
+.chip.p{background:var(--prog-soft);color:var(--prog)}
+.chip.n{background:var(--none-soft);color:var(--none)}
+.chip.bad{background:var(--bad-soft);color:var(--bad)}
+button.chip{cursor:pointer;border-color:currentColor}
+button.chip:hover{filter:brightness(.95)}
+.stat{display:flex;height:12px;border-radius:6px;overflow:hidden;background:var(--none-soft)}
+.stat i{display:block;height:100%}
+.stat .d{background:var(--done)}.stat .p{background:var(--prog)}
+.units{display:grid;gap:12px}
+.urow{display:grid;grid-template-columns:70px 1fr auto;gap:12px;align-items:center}
+.urow .code{font:500 13px var(--f-mono)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:baseline}
+.attn{display:grid;gap:8px}
+.attn li{list-style:none;display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--bg)}
+ul{margin:0;padding:0}
+.item{list-style:none;display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.item:last-child{border-bottom:0}
+.item .t{flex:1;min-width:160px}
+.empty{border:1px dashed var(--line);border-radius:14px;padding:28px 18px;text-align:center;color:var(--muted)}
+.empty b{display:block;color:var(--ink);font-size:16px;margin-bottom:4px}
+.note-item{border-left:3px solid var(--accent);padding:4px 0 4px 12px;margin:0 0 12px}
+.note-item .m{font:400 12px var(--f-mono);color:var(--muted)}
+.num{width:84px}
+.back{margin-bottom:12px}
+.lock{max-width:520px;margin:60px auto}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:14px;box-shadow:var(--shadow);z-index:20;max-width:90vw}
+.toast.err{background:var(--bad);color:#fff}
+.seg{display:flex;gap:6px}
+.seg .chip{padding:5px 12px}
+.seg .chip[aria-pressed="false"]{opacity:.45}
+@media (max-width:560px){h1{font-size:24px}.urow{grid-template-columns:54px 1fr}.urow .sub{grid-column:2}}
+@media (prefers-reduced-motion:no-preference){.tab,.btn{transition:background .15s,border-color .15s}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div><div class="eyebrow">Level 2 Electrical Installation &middot; 8202</div><h1>Learner Progress Tracker</h1></div>
+    <nav class="tabs" role="tablist" aria-label="Sections" id="tabs"></nav>
+  </header>
+  <main id="main"><div class="empty"><b>Loading</b>Opening the tracker.</div></main>
+</div>
+<div id="toast" class="toast" hidden role="status"></div>
+
+<script>
+"use strict";
+var UNITS=["201","202","203","204"];
+var ST={n:"Not started",p:"In progress",d:"Done"};
+var NEXT={n:"p",p:"d",d:"n"};
+var S={ready:false,locked:false,noDb:false,tab:"overview",sel:null,q:"",group:"",cfg:{activities:[],assessments:[]},learners:[],me:null,names:{},draft:{note:"",add:""},arm:null,pending:null,busy:false};
+var DB=null,USER=null,DL=null,queue={};
+
+function $(s,r){return (r||document).querySelector(s)}
+function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function uid(){return Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-4)}
+function fmt(ts){if(!ts)return"";try{return new Date(ts).toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"})}catch(e){return""}}
+function toast(m,bad){var t=$("#toast");t.textContent=m;t.className="toast"+(bad?" err":"");t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(function(){t.hidden=true},3200)}
+function errMsg(e){var c=e&&e.code;return c==="invalid_argument"?"That change was refused. Only tutors with Editor access can change the tracker.":c==="quota_exceeded"?"The tracker database is full.":c==="resource_exhausted"?"Too many changes at once. Wait a moment and try again.":"That could not be saved. Try again."}
+
+/* ---------- data helpers ---------- */
+function L(id){return S.learners.find(function(l){return l.id===id})}
+function unitSt(l,u){return(l.units&&l.units[u])||"n"}
+function actSt(l,id){var a=l.acts&&l.acts[id];return(a&&a.s)||"n"}
+function actList(){return S.cfg.activities}
+function testRes(l,t){var r=l.tests&&l.tests[t.id];if(!r||r.score==null||r.score==="")return null;return Number(r.score)>=Number(t.pass)?"pass":"refer"}
+function pct(a,b){return b?Math.round(100*a/b):0}
+function daysSince(ts){return ts?Math.floor((Date.now()-ts)/864e5):null}
+function flags(l){
+  var f=[];
+  S.cfg.assessments.forEach(function(t){if(testRes(l,t)==="refer")f.push("Referred: "+t.title)});
+  var d=l.hub&&l.hub.lastActive?daysSince(l.hub.lastActive):null;
+  if(d!==null&&d>14)f.push("Not active in the study hub for "+d+" days");
+  var any=UNITS.some(function(u){return unitSt(l,u)!=="n"});
+  if(!any&&!(l.hub&&l.hub.lastActive))f.push("No progress recorded yet");
+  return f;
+}
+function summary(l){
+  var ud=UNITS.filter(function(u){return unitSt(l,u)==="d"}).length;
+  var up=UNITS.filter(function(u){return unitSt(l,u)==="p"}).length;
+  var ad=actList().filter(function(a){return actSt(l,a.id)==="d"}).length;
+  var tests=S.cfg.assessments.filter(function(t){return testRes(l,t)!==null});
+  var pass=tests.filter(function(t){return testRes(l,t)==="pass"}).length;
+  return{ud:ud,up:up,ad:ad,at:actList().length,tests:tests.length,pass:pass};
+}
+
+/* ---------- writes ---------- */
+function write(key,fn){
+  var p=(queue[key]||Promise.resolve()).then(fn).catch(function(e){toast(errMsg(e),true)});
+  queue[key]=p;return p;
+}
+function upd(id,data){return write("l"+id,function(){return DB.doc("learners/"+id).update(Object.assign({},data,{updated:Date.now()}))})}
+function saveCfg(next){S.cfg=next;render();return write("cfg",function(){return DB.doc("config/main").set(next)})}
+function plan(rows){
+  var have={};S.learners.forEach(function(l){have[l.name.toLowerCase()]=l});
+  var seen={},fresh=[],upd=[],dup=0;
+  rows.forEach(function(r){
+    var name=String(r.name||"").replace(/\s+/g," ").trim().slice(0,80);if(!name)return;
+    var k=name.toLowerCase();if(seen[k]){dup++;return}seen[k]=1;
+    var g=String(r.group||"").trim().slice(0,40),cur=have[k];
+    if(!cur)fresh.push({name:name,group:g});
+    else if(g&&g!==cur.group)upd.push({id:cur.id,group:g});
+    else dup++;
+  });
+  return{fresh:fresh,upd:upd,dup:dup};
+}
+async function applyPlan(pl){
+  var jobs=pl.fresh.map(function(r){return function(){return DB.doc("learners/"+uid()).set({name:r.name,group:r.group,units:{},acts:{},tests:{},notes:[],target:"",created:Date.now(),updated:Date.now()})}})
+    .concat(pl.upd.map(function(r){return function(){return DB.doc("learners/"+r.id).update({group:r.group,updated:Date.now()})}}));
+  var i=0,failed=0;
+  async function worker(){while(i<jobs.length){var j=jobs[i++];try{await j()}catch(e){failed++;if(e&&e.code==="resource_exhausted"){await new Promise(function(r){setTimeout(r,800)});try{await j();failed--}catch(x){}}}}}
+  S.busy=true;render();
+  await Promise.all([worker(),worker(),worker(),worker()]);
+  S.busy=false;render();
+  return failed;
+}
+async function inflate(u8,method){
+  if(method===0)return u8;
+  if(method!==8||typeof DecompressionStream==="undefined")throw new Error("unsupported");
+  var ds=new DecompressionStream("deflate-raw"),w=ds.writable.getWriter();w.write(u8);w.close();
+  return new Uint8Array(await new Response(ds.readable).arrayBuffer());
+}
+async function readXlsx(buf){
+  var dv=new DataView(buf),u8=new Uint8Array(buf),dec=new TextDecoder(),e=-1;
+  for(var i=u8.length-22;i>=Math.max(0,u8.length-70000);i--)if(dv.getUint32(i,true)===0x06054b50){e=i;break}
+  if(e<0)throw new Error("not a zip");
+  var cnt=dv.getUint16(e+10,true),off=dv.getUint32(e+16,true),files={};
+  for(var k=0;k<cnt;k++){
+    if(dv.getUint32(off,true)!==0x02014b50)break;
+    var nl=dv.getUint16(off+28,true),xl=dv.getUint16(off+30,true),cl=dv.getUint16(off+32,true);
+    files[dec.decode(u8.subarray(off+46,off+46+nl))]={m:dv.getUint16(off+10,true),c:dv.getUint32(off+20,true),o:dv.getUint32(off+42,true)};
+    off+=46+nl+xl+cl;
+  }
+  var get=async function(name){var f=files[name];if(!f)return null;var o=f.o,n2=dv.getUint16(o+26,true),x2=dv.getUint16(o+28,true),st=o+30+n2+x2;return dec.decode(await inflate(u8.subarray(st,st+f.c),f.m))};
+  var sheetName=files["xl/worksheets/sheet1.xml"]?"xl/worksheets/sheet1.xml":Object.keys(files).filter(function(n){return /^xl\/worksheets\/sheet\d+\.xml$/.test(n)}).sort()[0];
+  if(!sheetName)throw new Error("no sheet");
+  var P=new DOMParser(),shared=[],ss=await get("xl/sharedStrings.xml");
+  if(ss){var sd=P.parseFromString(ss,"application/xml");Array.prototype.forEach.call(sd.getElementsByTagName("si"),function(si){shared.push(Array.prototype.map.call(si.getElementsByTagName("t"),function(t){return t.textContent}).join(""))})}
+  var doc=P.parseFromString(await get(sheetName),"application/xml"),rows=[];
+  Array.prototype.forEach.call(doc.getElementsByTagName("row"),function(row){
+    var r=[];
+    Array.prototype.forEach.call(row.getElementsByTagName("c"),function(c){
+      var ref=c.getAttribute("r")||"",m=/^([A-Z]+)/.exec(ref),ci=0;
+      if(m){for(var q=0;q<m[1].length;q++)ci=ci*26+m[1].charCodeAt(q)-64;ci--}else ci=r.length;
+      var t=c.getAttribute("t"),v=c.getElementsByTagName("v")[0],val="";
+      if(t==="s"&&v)val=shared[+v.textContent]||"";
+      else if(t==="inlineStr")val=Array.prototype.map.call(c.getElementsByTagName("t"),function(x){return x.textContent}).join("");
+      else if(v)val=v.textContent;
+      while(r.length<ci)r.push("");
+      r[ci]=val;
+    });
+    rows.push(r);
+  });
+  return rows;
+}
+function readSheet(file){
+  if(file.size>5e6){toast("That file is too large.",true);return}
+  if(/\.xls$/i.test(file.name)){toast("Older .xls files are not supported. In Excel choose Save As and pick Excel Workbook (.xlsx), then upload that.",true);return}
+  var fr=new FileReader();
+  fr.onload=async function(){
+    try{
+      var rows=/\.csv$/i.test(file.name)||file.type==="text/csv"?parseCsv(new TextDecoder().decode(new Uint8Array(fr.result))):await readXlsx(fr.result);
+      rows=rows.slice(0,2000).filter(function(r){return r.some(function(c){return String(c).trim()!==""})});
+      if(!rows.length){toast("That spreadsheet is empty.",true);return}
+      var hd=rows[0].map(function(c){return String(c).trim().toLowerCase()});
+      var find=function(re){return hd.findIndex(function(h){return re.test(h)})};
+      var iFirst=find(/^(first|given|forename)/),iLast=find(/^(last|sur|family)/),iName=find(/^(full ?name|name|learner|student)/),iGroup=find(/^(group|class|cohort|course|set)/);
+      var header=iFirst>-1||iLast>-1||iName>-1||iGroup>-1;
+      var data=header?rows.slice(1):rows,out;
+      if(header&&iFirst>-1&&iLast>-1)out=data.map(function(r){return{name:(r[iFirst]||"")+" "+(r[iLast]||""),group:iGroup>-1?r[iGroup]:""}});
+      else{var n=iName>-1?iName:0,g=iGroup>-1?iGroup:(n===0?1:0);out=data.map(function(r){return{name:r[n],group:r[g]}})}
+      var pl=plan(out);
+      if(!pl.fresh.length&&!pl.upd.length){toast("Nothing new in that file. All "+pl.dup+" names are already in the tracker.");return}
+      pl.file=file.name;pl.header=header;S.pending=pl;render();
+    }catch(e){toast("That file could not be read. Use an .xlsx or .csv file with names in the first column.",true)}
+  };
+  fr.readAsArrayBuffer(file);
+}
+async function templateCsv(){
+  if(!DL){toast("Downloads are not available in this view.",true);return}
+  try{await DL.save({filename:"learner-list-template.csv",data:new Blob(["﻿Name,Group\r\nSam Jones,Group A\r\nAmy Lee,Group B\r\n"],{type:"text/csv"})})}catch(e){}
+}
+
+/* ---------- views ---------- */
+function tabs(){
+  var t=[["overview","Overview"],["learners","Learners"],["setup","Setup"],["data","Import and export"]];
+  $("#tabs").innerHTML=t.map(function(x){return'<button class="tab" role="tab" data-tab="'+x[0]+'" aria-selected="'+(S.tab===x[0]&&!S.sel)+'">'+x[1]+"</button>"}).join("");
+}
+function chip(st,label){return'<span class="chip '+st+'">'+esc(label||ST[st])+"</span>"}
+function render(){
+  if(!S.ready)return;
+  var ae=document.activeElement;
+  tabs();
+  var m=$("#main");
+  if(S.locked){m.innerHTML='<div class="panel lock"><h2>Tutors only</h2><p class="sub">This tracker holds learner records, so only people with Editor access can open it. If you should have access, ask the page owner to share it with you as an Editor.</p></div>';$("#tabs").innerHTML="";return}
+  if(S.noDb){m.innerHTML='<div class="panel lock"><h2>Sign in to open the tracker</h2><p class="sub">The tracker needs a signed-in Claude session so it can load and save records.</p></div>';$("#tabs").innerHTML="";return}
+  if(S.sel&&L(S.sel))m.innerHTML=detailV(L(S.sel));
+  else{S.sel=null;m.innerHTML=S.tab==="overview"?overviewV():S.tab==="learners"?learnersV():S.tab==="setup"?setupV():dataV();tabs()}
+  var n=$("#nd");if(n)n.value=S.draft.note;
+  var a=$("#addTxt");if(a)a.value=S.draft.add;
+  var q=$("#q");if(q&&ae&&ae.id==="q"){q.focus();try{q.setSelectionRange(q.value.length,q.value.length)}catch(e){}}
+}
+
+function overviewV(){
+  var ls=S.learners;
+  if(!ls.length)return emptyV();
+  var tot=ls.length,sums=ls.map(summary);
+  var udone=sums.reduce(function(a,s){return a+s.ud},0),aTot=actList().length,adone=sums.reduce(function(a,s){return a+s.ad},0);
+  var tt=sums.reduce(function(a,s){return a+s.tests},0),tp=sums.reduce(function(a,s){return a+s.pass},0);
+  var tile=function(n,l){return'<div class="tile"><b>'+esc(n)+"</b><span>"+l+"</span></div>"};
+  var h='<div class="stack"><div class="tiles">'+tile(tot,"learners")+tile(pct(udone,tot*UNITS.length)+"%","of units completed")+tile(aTot?pct(adone,tot*aTot)+"%":"-","of activities done")+tile(tt?pct(tp,tt)+"%":"-","assessment pass rate")+"</div>";
+  h+='<section class="panel"><h2>Unit completion</h2><div class="units">'+UNITS.map(function(u){
+    var d=ls.filter(function(l){return unitSt(l,u)==="d"}).length,p=ls.filter(function(l){return unitSt(l,u)==="p"}).length;
+    return'<div class="urow"><span class="code">Unit '+u+'</span><div class="stat" role="img" aria-label="Unit '+u+': '+d+' done, '+p+' in progress, '+(tot-d-p)+' not started"><i class="d" style="width:'+pct(d,tot)+'%"></i><i class="p" style="width:'+pct(p,tot)+'%"></i></div><span class="sub">'+d+" done &middot; "+p+" in progress &middot; "+(tot-d-p)+" not started</span></div>"}).join("")+
+    '</div><div class="legend" style="margin-top:14px"><span><i style="background:var(--done)"></i>Done</span><span><i style="background:var(--prog)"></i>In progress</span><span><i style="background:var(--none-soft);border:1px solid var(--line)"></i>Not started</span></div></section>';
+  var need=ls.map(function(l){return{l:l,f:flags(l)}}).filter(function(x){return x.f.length});
+  h+='<section class="panel"><h2>Needs attention</h2>'+(need.length?'<ul class="attn">'+need.map(function(x){return'<li><button class="lname" data-open="'+esc(x.l.id)+'">'+esc(x.l.name)+'</button><span class="sub">'+esc(x.f.join(" &middot; ").replace(/&middot;/g,"·"))+"</span></li>"}).join("")+"</ul>":'<p class="sub" style="margin:0">Nobody is flagged. Learners appear here when they are referred on an assessment, have not used the study hub for 14 days, or have no progress recorded.</p>')+"</section></div>";
+  return h;
+}
+function emptyV(){
+  return'<div class="stack"><div class="empty"><b>No learners yet</b>Paste your class list below to start tracking. You can also import progress from the study hub on the Import and export tab.</div>'+addPanel()+"</div>";
+}
+function addPanel(){
+  var pend=S.pending;
+  var h='<section class="panel"><h2>Add learners</h2>';
+  if(S.busy)return h+'<p class="sub" style="margin:0">Adding learners. This can take a few seconds for a large class.</p></section>';
+  if(pend){
+    h+='<div class="panel" style="background:var(--accent-soft);border-color:var(--accent)"><h3>Ready to add from '+esc(pend.file)+'</h3><p style="margin:6px 0 10px">'+pend.fresh.length+' new learner'+(pend.fresh.length===1?"":"s")+(pend.upd.length?", "+pend.upd.length+" group change"+(pend.upd.length===1?"":"s"):"")+(pend.dup?", "+pend.dup+" skipped (already in the tracker or repeated)":"")+'.</p>'+
+      (pend.fresh.length?'<div class="sub" style="margin-bottom:10px">First rows: '+esc(pend.fresh.slice(0,5).map(function(r){return r.name+(r.group?" ("+r.group+")":"")}).join(", "))+(pend.fresh.length>5?", &hellip;":"")+'</div>':"")+
+      (pend.header?"":'<div class="sub" style="margin-bottom:10px">No header row found, so the first column is read as the name and the second as the group.</div>')+
+      '<div class="row"><button class="btn primary" data-act="confirmimp">Add them</button><button class="btn" data-act="cancelimp">Cancel</button></div></div>';
+  }
+  h+='<div class="grid2"><div><label class="l" for="xlf">Upload a spreadsheet</label><input class="in" id="xlf" type="file" accept=".xlsx,.xls,.csv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"><p class="sub" style="margin:6px 0 0">Excel (.xlsx) or CSV. Put names in the first column and groups in the second, with or without a header row. Headers such as Name, First name, Surname, Group, Class and Cohort are recognised.</p><div class="row" style="margin-top:8px"><button class="btn sm" data-act="tpl">Download a template</button></div></div>'+
+    '<div><label class="l" for="addTxt">Or type or paste a list</label><textarea class="in" id="addTxt" placeholder="Sam Jones, Group A"></textarea><div class="row" style="margin-top:10px"><button class="btn primary" data-act="addl">Add to tracker</button></div></div></div></section>';
+  return h;
+}
+function groups(){var g={};S.learners.forEach(function(l){if(l.group)g[l.group]=1});return Object.keys(g).sort()}
+function learnersV(){
+  if(!S.learners.length)return emptyV();
+  var q=S.q.trim().toLowerCase();
+  var rows=S.learners.filter(function(l){return(!q||l.name.toLowerCase().indexOf(q)>-1)&&(!S.group||l.group===S.group)}).sort(function(a,b){return a.name.localeCompare(b.name)});
+  var gs=groups();
+  var h='<div class="stack"><div class="row"><input class="in" id="q" style="max-width:280px" type="search" placeholder="Search learners" value="'+esc(S.q)+'" aria-label="Search learners">'+(gs.length?'<select class="in" id="gsel" style="max-width:200px" aria-label="Filter by group"><option value="">All groups</option>'+gs.map(function(g){return'<option '+(g===S.group?"selected":"")+">"+esc(g)+"</option>"}).join("")+"</select>":"")+'<span class="sp"></span><span class="sub">'+rows.length+" of "+S.learners.length+" learners</span></div>";
+  h+='<div class="tblwrap"><table><thead><tr><th>Learner</th>'+UNITS.map(function(u){return"<th>"+u+"</th>"}).join("")+"<th>Activities</th><th>Assessments</th><th></th></tr></thead><tbody>"+
+    rows.map(function(l){var s=summary(l),f=flags(l).length;
+      return'<tr><td><button class="lname" data-open="'+esc(l.id)+'">'+esc(l.name)+"</button>"+(l.group?'<div class="sub">'+esc(l.group)+"</div>":"")+"</td>"+
+        UNITS.map(function(u){var st=unitSt(l,u);return'<td><button class="chip '+st+'" data-unit="'+esc(l.id)+'|'+u+'" title="Click to change" aria-label="Unit '+u+' for '+esc(l.name)+': '+ST[st]+'. Click to change.">'+(st==="d"?"Done":st==="p"?"In progress":"Not started")+"</button></td>"}).join("")+
+        '<td class="n">'+(s.at?s.ad+" of "+s.at:"-")+'</td><td class="n">'+(s.tests?s.pass+" of "+s.tests+" passed":"-")+"</td><td>"+(f?'<span class="chip bad" title="'+esc(flags(l).join(". "))+'">Check</span>':"")+"</td></tr>"}).join("")+"</tbody></table></div>"+
+    '<p class="sub" style="margin:0">Click a unit status to move it from not started to in progress to done. Click a name for the full record.</p>';
+  h+=addPanel()+"</div>";
+  return h;
+}
+
+function detailV(l){
+  var by=function(id){return S.names[id]||"Tutor"};
+  var h='<div class="stack"><div><button class="btn sm back" data-act="back">Back to learners</button><div class="row"><h1 style="margin:0">'+esc(l.name)+'</h1>'+(l.group?'<span class="chip n">'+esc(l.group)+"</span>":"")+"</div></div>";
+  var fl=flags(l);
+  if(fl.length)h+='<div class="panel" style="border-color:var(--bad)"><h3 style="color:var(--bad)">Needs attention</h3><ul>'+fl.map(function(x){return'<li class="sub" style="list-style:disc inside">'+esc(x)+"</li>"}).join("")+"</ul></div>";
+  h+='<section class="panel"><h2>Units</h2><div class="grid2">'+UNITS.map(function(u){var st=unitSt(l,u);return'<div class="row"><b style="min-width:80px">Unit '+u+'</b><button class="chip '+st+'" data-unit="'+esc(l.id)+'|'+u+'">'+ST[st]+"</button></div>"}).join("")+"</div></section>";
+  h+='<section class="panel"><h2>Activities and worksheets</h2>';
+  if(!actList().length)h+='<p class="sub" style="margin:0">No activities set up yet. Add them on the Setup tab.</p>';
+  else UNITS.forEach(function(u){var items=actList().filter(function(a){return a.unit===u});if(!items.length)return;
+    h+='<div class="eyebrow" style="margin:14px 0 2px">Unit '+u+'</div><ul>'+items.map(function(a){var st=actSt(l,a.id),dt=l.acts&&l.acts[a.id]&&l.acts[a.id].d;
+      return'<li class="item"><span class="t">'+esc(a.title)+'</span><span class="sub">'+(st!=="n"&&dt?fmt(dt):"")+'</span><button class="chip '+st+'" data-act2="'+esc(l.id)+"|"+esc(a.id)+'">'+ST[st]+"</button></li>"}).join("")+"</ul>"});
+  h+="</section>";
+  h+='<section class="panel"><h2>Assessments</h2>';
+  if(!S.cfg.assessments.length)h+='<p class="sub" style="margin:0">No assessments set up yet. Add them on the Setup tab.</p>';
+  else h+="<ul>"+S.cfg.assessments.map(function(t){var r=l.tests&&l.tests[t.id],res=testRes(l,t);
+    return'<li class="item"><span class="t">'+esc(t.title)+'<div class="sub">Unit '+esc(t.unit)+" &middot; pass mark "+esc(t.pass)+" of "+esc(t.max)+'</div></span><label class="sub" for="sc-'+esc(t.id)+'">Score</label><input class="in num" id="sc-'+esc(t.id)+'" type="number" min="0" max="'+esc(t.max)+'" data-score="'+esc(l.id)+"|"+esc(t.id)+'" value="'+(r&&r.score!=null?esc(r.score):"")+'">'+(res?'<span class="chip '+(res==="pass"?"d":"bad")+'">'+(res==="pass"?"Pass":"Refer")+"</span>":'<span class="chip n">No score</span>')+"</li>"}).join("")+"</ul>";
+  h+="</section>";
+  h+='<section class="panel"><h2>Target</h2><label class="l" for="tg">Current target or next step</label><textarea class="in" id="tg" data-target="'+esc(l.id)+'" placeholder="For example: complete Worksheet 3 before Friday">'+esc(l.target||"")+'</textarea></section>';
+  h+='<section class="panel"><h2>Notes</h2>'+((l.notes||[]).length?(l.notes||[]).slice().reverse().map(function(n){return'<div class="note-item"><div>'+esc(n.t)+'</div><div class="m">'+esc(fmt(n.ts))+" &middot; "+esc(by(n.by))+"</div></div>"}).join(""):'<p class="sub">No notes yet.</p>')+
+    '<label class="l" for="nd">Add a note</label><textarea class="in" id="nd" placeholder="Attendance, conversations, concerns"></textarea><div class="row" style="margin-top:10px"><button class="btn primary" data-act="addnote" data-id="'+esc(l.id)+'">Save note</button></div></section>';
+  var hb=l.hub;
+  h+='<section class="panel"><h2>Study hub activity</h2>'+(hb?'<div class="grid2"><div><div class="sub">Presentations studied</div><b>'+esc(hb.studied)+'</b></div><div><div class="sub">Slides viewed</div><b>'+esc(hb.slides)+'</b></div><div><div class="sub">Quizzes taken</div><b>'+esc(hb.quizzes)+'</b></div><div><div class="sub">Quiz average</div><b>'+(hb.avg===""||hb.avg==null?"-":esc(hb.avg)+"%")+'</b></div><div><div class="sub">Hub activities done</div><b>'+esc(hb.done)+" of "+esc(hb.total)+'</b></div><div><div class="sub">Last active</div><b>'+(hb.lastActive?esc(fmt(hb.lastActive)):"-")+'</b></div></div><p class="sub" style="margin-bottom:0">Imported '+esc(fmt(hb.at))+".</p>":'<p class="sub" style="margin:0">Nothing imported yet. Download the CSV from the study hub Progress tab and import it on the Import and export tab.</p>')+"</section>";
+  h+='<section class="panel"><h2>Learner record</h2><div class="grid2"><div><label class="l" for="gp">Group</label><input class="in" id="gp" data-group="'+esc(l.id)+'" value="'+esc(l.group||"")+'" maxlength="40"></div><div><label class="l" for="nm">Name</label><input class="in" id="nm" data-name="'+esc(l.id)+'" value="'+esc(l.name)+'" maxlength="80"></div></div><div class="row" style="margin-top:12px"><button class="btn bad" data-act="dell" data-id="'+esc(l.id)+'">'+(S.arm==="dell"+l.id?"Confirm remove learner":"Remove learner")+"</button></div></section></div>";
+  return h;
+}
+
+function setupV(){
+  var uo=UNITS.map(function(u){return'<option value="'+u+'">Unit '+u+"</option>"}).join("");
+  var h='<div class="stack"><section class="panel"><h2>Activities and worksheets</h2><p class="sub" style="margin-top:0">Use the same titles as in the study hub so you can compare them.</p>';
+  h+=actList().length?"<ul>"+actList().map(function(a){return'<li class="item"><span class="chip n">'+esc(a.unit)+'</span><span class="t">'+esc(a.title)+'</span><button class="btn sm bad" data-delcfg="a|'+esc(a.id)+'">'+(S.arm==="a"+a.id?"Confirm remove":"Remove")+"</button></li>"}).join("")+"</ul>":'<div class="empty" style="margin-bottom:10px">None yet.</div>';
+  h+='<div class="grid2" style="margin-top:12px"><div><label class="l" for="na-u">Unit</label><select class="in" id="na-u">'+uo+'</select></div><div><label class="l" for="na-t">Title</label><input class="in" id="na-t" maxlength="120" placeholder="Worksheet 1: Health and safety"></div></div><div class="row" style="margin-top:10px"><button class="btn primary" data-act="adda">Add activity</button></div></section>';
+  h+='<section class="panel"><h2>Assessments</h2><p class="sub" style="margin-top:0">A learner whose score is below the pass mark is marked as referred.</p>';
+  h+=S.cfg.assessments.length?"<ul>"+S.cfg.assessments.map(function(t){return'<li class="item"><span class="chip n">'+esc(t.unit)+'</span><span class="t">'+esc(t.title)+'<div class="sub">Pass mark '+esc(t.pass)+" of "+esc(t.max)+'</div></span><button class="btn sm bad" data-delcfg="t|'+esc(t.id)+'">'+(S.arm==="t"+t.id?"Confirm remove":"Remove")+"</button></li>"}).join("")+"</ul>":'<div class="empty" style="margin-bottom:10px">None yet.</div>';
+  h+='<div class="grid2" style="margin-top:12px"><div><label class="l" for="nt-u">Unit</label><select class="in" id="nt-u">'+uo+'</select></div><div><label class="l" for="nt-t">Title</label><input class="in" id="nt-t" maxlength="120" placeholder="Unit 201 end test"></div><div><label class="l" for="nt-m">Total marks</label><input class="in" id="nt-m" type="number" min="1" value="40"></div><div><label class="l" for="nt-p">Pass mark</label><input class="in" id="nt-p" type="number" min="0" value="24"></div></div><div class="row" style="margin-top:10px"><button class="btn primary" data-act="addt">Add assessment</button></div></section></div>';
+  return h;
+}
+
+function dataV(){
+  return'<div class="stack"><section class="panel"><h2>Import from the study hub</h2><p class="sub" style="margin-top:0">In the study hub, open Admin dashboard, then Progress, then Download as CSV. Choose that file here. Learners are matched by name, and new names are added. Learner names come from each learner\'s Claude account, so they should match your class list.</p><label class="l" for="csvf">Study hub CSV</label><input class="in" id="csvf" type="file" accept=".csv,text/csv"></section>'+
+    '<section class="panel"><h2>Export this tracker</h2><p class="sub" style="margin-top:0">Saves a CSV with each learner\'s unit status, activity and assessment results, group, target and study hub figures.</p><div class="row"><button class="btn primary" data-act="export">Download as CSV</button></div></section></div>';
+}
+
+/* ---------- csv ---------- */
+function parseCsv(t){
+  var rows=[],r=[],c="",q=false;t=t.replace(/^﻿/,"");
+  for(var i=0;i<t.length;i++){var ch=t[i];
+    if(q){if(ch==='"'){if(t[i+1]==='"'){c+='"';i++}else q=false}else c+=ch}
+    else if(ch==='"')q=true;
+    else if(ch===","){r.push(c);c=""}
+    else if(ch==="\n"||ch==="\r"){if(ch==="\r"&&t[i+1]==="\n")i++;r.push(c);c="";if(r.length>1||r[0]!=="")rows.push(r);r=[]}
+    else c+=ch}
+  if(c!==""||r.length){r.push(c);rows.push(r)}
+  return rows;
+}
+function importHub(text){
+  var rows=parseCsv(text);if(rows.length<2){toast("That file has no learner rows.",true);return}
+  var hd=rows[0].map(function(x){return x.trim().toLowerCase()});
+  var ix=function(k){return hd.findIndex(function(h){return h.indexOf(k)===0})};
+  var iN=ix("learner"),iS=ix("presentations studied"),iV=ix("slides"),iQ=ix("quizzes"),iA=ix("quiz average"),iD=ix("activities done"),iT=ix("activities total"),iL=ix("last active");
+  if(iN<0){toast("This does not look like a study hub CSV. It needs a Learner column.",true);return}
+  var n=0,added=0,now=Date.now(),have={};S.learners.forEach(function(l){have[l.name.toLowerCase()]=l});
+  rows.slice(1).forEach(function(r){
+    var name=(r[iN]||"").trim();if(!name)return;
+    var la=r[iL]?Date.parse(r[iL]):0;
+    var hub={studied:+r[iS]||0,slides:+r[iV]||0,quizzes:+r[iQ]||0,avg:r[iA]===""||r[iA]==null?"":+r[iA],done:+r[iD]||0,total:+r[iT]||0,lastActive:la||0,at:now};
+    var cur=have[name.toLowerCase()];
+    if(cur){upd(cur.id,{hub:hub})}
+    else{var id=uid();added++;write("l"+id,function(){return DB.doc("learners/"+id).set({name:name.slice(0,80),group:"",units:{},acts:{},tests:{},notes:[],target:"",hub:hub,created:now,updated:now})})}
+    n++;
+  });
+  toast("Imported "+n+" learners"+(added?" ("+added+" new)":"")+".");
+}
+async function exportCsv(){
+  var head=["Learner","Group"].concat(UNITS.map(function(u){return"Unit "+u})).concat(actList().map(function(a){return"Activity: "+a.title})).concat(S.cfg.assessments.map(function(t){return"Assessment: "+t.title})).concat(["Target","Hub studied","Hub slides","Hub quizzes","Hub quiz avg %","Hub last active"]);
+  var rows=S.learners.slice().sort(function(a,b){return a.name.localeCompare(b.name)}).map(function(l){
+    return[l.name,l.group||""].concat(UNITS.map(function(u){return ST[unitSt(l,u)]})).concat(actList().map(function(a){return ST[actSt(l,a.id)]})).concat(S.cfg.assessments.map(function(t){var r=l.tests&&l.tests[t.id];return r&&r.score!=null&&r.score!==""?r.score+"/"+t.max+" ("+(testRes(l,t)==="pass"?"Pass":"Refer")+")":""})).concat([l.target||"",l.hub?l.hub.studied:"",l.hub?l.hub.slides:"",l.hub?l.hub.quizzes:"",l.hub?l.hub.avg:"",l.hub&&l.hub.lastActive?new Date(l.hub.lastActive).toISOString().slice(0,10):""])});
+  var q=function(v){v=String(v);if(/^[=+\-@\t\r]/.test(v))v="'"+v;return'"'+v.replace(/"/g,'""')+'"'};
+  var blob=new Blob(["﻿"+[head].concat(rows).map(function(r){return r.map(q).join(",")}).join("\r\n")],{type:"text/csv"});
+  if(!DL){toast("Downloads are not available in this view.",true);return}
+  try{await DL.save({filename:"learner-progress-tracker.csv",data:blob})}catch(e){toast("The file was not saved.",true)}
+}
+
+/* ---------- events ---------- */
+document.addEventListener("click",function(ev){
+  var t=ev.target.closest("button");if(!t)return;var d=t.dataset;
+  if(d.tab){S.tab=d.tab;S.sel=null;S.arm=null;render();return}
+  if(d.open){S.sel=d.open;S.arm=null;render();window.scrollTo(0,0);return}
+  if(d.unit){var p=d.unit.split("|"),l=L(p[0]);if(!l)return;var nx=NEXT[unitSt(l,p[1])];l.units=Object.assign({},l.units);l.units[p[1]]=nx;render();var o={units:{}};o.units[p[1]]=nx;upd(l.id,o);return}
+  if(d.act2){var q=d.act2.split("|"),l2=L(q[0]);if(!l2)return;var n2=NEXT[actSt(l2,q[1])];l2.acts=Object.assign({},l2.acts);l2.acts[q[1]]={s:n2,d:Date.now()};render();var o2={acts:{}};o2.acts[q[1]]={s:n2,d:Date.now()};upd(l2.id,o2);return}
+  if(d.delcfg){var k=d.delcfg.split("|"),key=k[0]+k[1];if(S.arm!==key){S.arm=key;render();return}S.arm=null;
+    var c=JSON.parse(JSON.stringify(S.cfg));if(k[0]==="a")c.activities=c.activities.filter(function(a){return a.id!==k[1]});else c.assessments=c.assessments.filter(function(a){return a.id!==k[1]});saveCfg(c);toast("Removed.");return}
+  switch(d.act){
+    case"back":S.sel=null;S.arm=null;S.tab="learners";render();break;
+    case"addl":{var txt=($("#addTxt")||{}).value||"";var rows=txt.split(/\r?\n/).map(function(x){var a=x.split(",");return{name:a[0],group:a.slice(1).join(",")}});var pl=plan(rows);S.draft.add="";if(!pl.fresh.length&&!pl.upd.length){toast("Nothing new to add. Names that already exist are skipped.");break}applyPlan(pl).then(function(f){toast(f?"Added with "+f+" that could not be saved. Try those again.":"Added "+pl.fresh.length+" learner"+(pl.fresh.length===1?"":"s")+".",!!f)});break}
+    case"confirmimp":{var pp=S.pending;S.pending=null;if(!pp)break;applyPlan(pp).then(function(f){toast(f?"Added with "+f+" that could not be saved. Upload the file again to add the rest.":"Added "+pp.fresh.length+" learner"+(pp.fresh.length===1?"":"s")+(pp.upd.length?" and updated "+pp.upd.length+" group"+(pp.upd.length===1?"":"s"):"")+".",!!f)});break}
+    case"cancelimp":S.pending=null;render();break;
+    case"tpl":templateCsv();break;
+    case"addnote":{var tx=(S.draft.note||"").trim();if(!tx)return;var l3=L(d.id);if(!l3)return;var notes=(l3.notes||[]).concat([{t:tx.slice(0,1000),ts:Date.now(),by:S.me}]).slice(-100);l3.notes=notes;S.draft.note="";render();upd(l3.id,{notes:notes});break}
+    case"dell":{if(S.arm!=="dell"+d.id){S.arm="dell"+d.id;render();return}S.arm=null;S.sel=null;var id=d.id;S.learners=S.learners.filter(function(x){return x.id!==id});render();write("l"+id,function(){return DB.doc("learners/"+id).delete()});toast("Learner removed.");break}
+    case"adda":{var ti=$("#na-t").value.trim();if(!ti){toast("Give the activity a title.",true);return}var c2=JSON.parse(JSON.stringify(S.cfg));c2.activities.push({id:uid(),unit:$("#na-u").value,title:ti.slice(0,120)});saveCfg(c2);toast("Activity added.");break}
+    case"addt":{var tt=$("#nt-t").value.trim(),mx=+$("#nt-m").value,ps=+$("#nt-p").value;if(!tt){toast("Give the assessment a title.",true);return}if(!(mx>0)||!(ps>=0)||ps>mx){toast("Check the marks. The pass mark can't be more than the total.",true);return}var c3=JSON.parse(JSON.stringify(S.cfg));c3.assessments.push({id:uid(),unit:$("#nt-u").value,title:tt.slice(0,120),max:mx,pass:ps});saveCfg(c3);toast("Assessment added.");break}
+    case"export":exportCsv();break;
+  }
+});
+document.addEventListener("input",function(ev){
+  var t=ev.target;
+  if(t.id==="q"){S.q=t.value;render()}
+  else if(t.id==="nd")S.draft.note=t.value;
+  else if(t.id==="addTxt")S.draft.add=t.value;
+});
+document.addEventListener("change",function(ev){
+  var t=ev.target,d=t.dataset;
+  if(t.id==="gsel"){S.group=t.value;render();return}
+  if(t.id==="xlf"&&t.files[0]){readSheet(t.files[0]);t.value="";return}
+  if(t.id==="csvf"&&t.files[0]){var f=t.files[0];if(f.size>2e6){toast("That file is too large.",true);return}var r=new FileReader();r.onload=function(){importHub(String(r.result))};r.readAsText(f);t.value="";return}
+  if(d.score){var p=d.score.split("|"),l=L(p[0]);if(!l)return;var v=t.value===""?"":Math.max(0,Number(t.value));var o={tests:{}};o.tests[p[1]]={score:v,date:Date.now()};l.tests=Object.assign({},l.tests);l.tests[p[1]]=o.tests[p[1]];render();upd(l.id,o);return}
+  if(d.target){var l2=L(d.target);if(l2){l2.target=t.value.slice(0,500);upd(l2.id,{target:l2.target})}return}
+  if(d.group!==undefined&&t.dataset.group){var l3=L(t.dataset.group);if(l3){l3.group=t.value.trim().slice(0,40);upd(l3.id,{group:l3.group})}return}
+  if(d.name){var l4=L(d.name),nv=t.value.trim().slice(0,80);if(l4&&nv){l4.name=nv;upd(l4.id,{name:nv})}return}
+});
+
+/* ---------- start ---------- */
+(async function(){
+  var c=window.claude;
+  try{USER=c&&c.use?await c.use("user"):null}catch(e){}
+  try{DB=c&&c.use?await c.use("db"):null}catch(e){}
+  try{DL=c&&c.use?await c.use("downloads"):null}catch(e){}
+  S.ready=true;
+  if(!DB){S.noDb=true;render();return}
+  var canEdit=false;try{canEdit=USER?await USER.canEdit():false}catch(e){}
+  if(!canEdit){S.locked=true;render();return}
+  try{S.me=USER&&USER.id?await USER.id():null}catch(e){}
+  var names=function(){
+    var ids={};S.learners.forEach(function(l){(l.notes||[]).forEach(function(n){if(n.by)ids[n.by]=1})});
+    var list=Object.keys(ids);if(!list.length||!USER||!USER.profiles)return;
+    USER.profiles(list).then(function(p){var ch=false;list.forEach(function(i){var n=p[i]&&p[i].name;if(n&&S.names[i]!==n){S.names[i]=n;ch=true}});if(ch)render()}).catch(function(){});
+  };
+  DB.doc("config/main").onSnapshot(function(s){var d=s.exists?s.data():{};S.cfg={activities:Array.isArray(d.activities)?d.activities:[],assessments:Array.isArray(d.assessments)?d.assessments:[]};render()},function(){});
+  DB.collection("learners").onSnapshot(function(s){S.learners=s.docs.map(function(x){return Object.assign({},x.data(),{id:x.id})});S.learnersReady=true;names();render()},function(){S.locked=true;render()});
+  render();
+})();
+</script>
+
+</body></html>
