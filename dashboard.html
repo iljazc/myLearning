@@ -111,7 +111,7 @@ ul{margin:0;padding:0}
 
 <script>
 const sb = window.supabase.createClient(
- "https://aynyitslikigfbwacxnt.supabase.co/rest/v1/",
+ "https://aynyitslikigfbwacxnt.supabase.co/",
   "sb_publishable_HvPDMaM4cZ3L-LwqUAOnRw_7Q7efv7H"
 );
 </script>
@@ -462,7 +462,27 @@ document.addEventListener("change",function(ev){
 
   console.log("Logged in:", session.user.email);
 
+  const { data: configData, error: configError } =
+    await sb
+      .from("config")
+      .select("*")
+      .eq("id", "main")
+      .single();
+
+  if (configError) {
+    console.error(configError);
+    return;
+  }
+
+  S.cfg = {
+    activities: configData.activities || [],
+    assessments: configData.assessments || []
+  };
+
+  render();
+
 })();
+
 
 </script>
 
