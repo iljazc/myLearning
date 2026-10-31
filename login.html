@@ -83,13 +83,19 @@ async function login(){
             email,
             password
         });
+        console.log("EMAIL", email);
+        console.log("DATA", data);
+        console.log("ERROR", error);
         console.log(error);
 
     if(error){
-        document.getElementById("msg").textContent =
-            error.message;
-        return;
-    }
+    console.log("LOGIN ERROR", error);
+    document.getElementById("msg").textContent =
+        error.message;
+    return;
+}
+
+console.log("LOGIN SUCCESS", data);
 
     const { data: profile, error: profileError } =
         await sb
@@ -104,15 +110,6 @@ async function login(){
         console.error(profileError);
         return;
     }
-
-    if(
-        profile.role === "super_admin" ||
-        profile.role === "staff"
-    ){
-        window.location.href = "dashboard.html";
-    } else {
-        window.location.href = "index.html";
-    }
     if(profile.active === false){
 
     await sb.auth.signOut();
@@ -121,7 +118,18 @@ async function login(){
         "This account has been disabled.";
 
     return;
-}
+    }
+    if(
+        profile.role === "super_admin" ||
+        profile.role === "staff"
+    ){
+        window.location.href = "/dashboard.html";
+    } else {
+        window.location.href = "/index.html";
+    }
+
+console.log("PROFILE", profile);
+console.log("PROFILE ERROR", profileError);
 }
 async function resetPassword(){
 
