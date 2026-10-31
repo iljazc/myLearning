@@ -103,6 +103,9 @@ console.log("LOGIN SUCCESS", data);
             .select("*")
             .eq("id", data.user.id)
             .single();
+console.log("PROFILE", profile);
+console.log("ROLE:", profile.role);
+console.log("PROFILE ERROR", profileError);
 
     if(profileError){
         document.getElementById("msg").textContent =
@@ -128,8 +131,7 @@ console.log("LOGIN SUCCESS", data);
         window.location.href = "/index.html";
     }
 
-console.log("PROFILE", profile);
-console.log("PROFILE ERROR", profileError);
+
 }
 async function resetPassword(){
 
