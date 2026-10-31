@@ -122,7 +122,7 @@ const sb = window.supabase.createClient(
 var UNITS=["201","202","203","204"];
 var ST={n:"Not started",p:"In progress",d:"Done"};
 var NEXT={n:"p",p:"d",d:"n"};
-var S={ready:false,locked:false,noDb:false,tab:"overview",sel:null,q:"",group:"",cfg:{activities:[],assessments:[]},learners:[],me:null,names:{},draft:{note:"",add:""},arm:null,pending:null,busy:false};
+var S={ready:false,locked:false,noDb:false,tab:"overview",sel:null,q:"",group:"",cfg:{activities:[],assessments:[]},learners:[],users:[],me:null,names:{},draft:{note:"",add:""},arm:null,pending:null,busy:false};
 var DB=null,USER=null,DL=null,queue={};
 
 function $(s,r){return (r||document).querySelector(s)}
@@ -390,7 +390,14 @@ async function templateCsv(){
 
 /* ---------- views ---------- */
 function tabs(){
-  var t=[["overview","Overview"],["learners","Learners"],["setup","Setup"],["data","Import and export"]];
+  console.log("Rendering tabs");
+var t=[
+  ["overview","Overview"],
+  ["learners","Learners"],
+  ["setup","Setup"],
+  ["users","Users"],
+  ["data","Import and export"]
+];
   $("#tabs").innerHTML=t.map(function(x){return'<button class="tab" role="tab" data-tab="'+x[0]+'" aria-selected="'+(S.tab===x[0]&&!S.sel)+'">'+x[1]+"</button>"}).join("");
 }
 function chip(st,label){return'<span class="chip '+st+'">'+esc(label||ST[st])+"</span>"}
@@ -402,7 +409,18 @@ function render(){
   if(S.locked){m.innerHTML='<div class="panel lock"><h2>Tutors only</h2><p class="sub">This tracker holds learner records, so only people with Editor access can open it. If you should have access, ask the page owner to share it with you as an Editor.</p></div>';$("#tabs").innerHTML="";return}
   if(S.noDb){m.innerHTML='<div class="panel lock"><h2>Sign in to open the tracker</h2><p class="sub">The tracker needs a signed-in Claude session so it can load and save records.</p></div>';$("#tabs").innerHTML="";return}
   if(S.sel&&L(S.sel))m.innerHTML=detailV(L(S.sel));
-  else{S.sel=null;m.innerHTML=S.tab==="overview"?overviewV():S.tab==="learners"?learnersV():S.tab==="setup"?setupV():dataV();tabs()}
+else{
+  S.sel=null;
+  m.innerHTML=
+    S.tab==="overview"?overviewV():
+    S.tab==="learners"?learnersV():
+    S.tab==="setup"?setupV():
+    S.tab==="users"?usersV():
+    S.tab==="data"?dataV():
+    overviewV();
+
+  tabs();
+}
   var n=$("#nd");if(n)n.value=S.draft.note;
   var a=$("#addTxt");if(a)a.value=S.draft.add;
   var q=$("#q");if(q&&ae&&ae.id==="q"){q.focus();try{q.setSelectionRange(q.value.length,q.value.length)}catch(e){}}
@@ -427,6 +445,63 @@ function overviewV(){
 function emptyV(){
   return'<div class="stack"><div class="empty"><b>No learners yet</b>Paste your class list below to start tracking. You can also import progress from the study hub on the Import and export tab.</div>'+addPanel()+"</div>";
 }
+
+function usersV(){
+
+  var h =
+    '<section class="panel">' +
+    '<h2>Users</h2>';
+
+  if(!S.users || !S.users.length){
+    h += '<p class="sub">No users found.</p>';
+    h += '</section>';
+    return h;
+  }
+
+  h += '<ul>';
+
+  h += S.users.map(function(u){
+
+    return (
+      '<li class="item">' +
+
+      '<span class="t">' +
+
+      esc(
+        (u.first_name || '') +
+        ' ' +
+        (u.last_name || '')
+      ) +
+
+      '<div class="sub">' +
+      esc(u.email || '') +
+      '</div>' +
+
+      '<div class="sub">' +
+      esc(u.phone || '') +
+      '</div>' +
+
+      '</span>' +
+
+      '<span class="chip n">' +
+      esc(u.role || 'student') +
+      '</span>' +
+
+      '<button class="btn sm" data-promote="' +
+      esc(u.id) +
+      '">Change Role</button>' +
+
+      '</li>'
+    );
+
+  }).join('');
+
+  h += '</ul>';
+  h += '</section>';
+
+  return h;
+}
+
 function addPanel(){
   var pend=S.pending;
   var h='<section class="panel"><h2>Add learners</h2>';
@@ -761,7 +836,8 @@ if (
     await sb
       .from("learners")
       .select("*");
-  if (learnersError) {
+
+if (learnersError) {
   console.error("Learners error:", learnersError);
 } else {
 
@@ -773,7 +849,19 @@ if (
 
   S.learnersReady = true;
 }
-  render();
+
+const { data: usersData, error: usersError } =
+    await sb
+      .from("profiles")
+      .select("*");
+
+if(usersError){
+  console.error("Users error:", usersError);
+} else {
+  S.users = usersData || [];
+}
+
+render();
 
 })();
 
