@@ -187,7 +187,7 @@ function summary(l){
 }
 
 function renderUserPanel(){
-
+console.log("USER PANEL DATA", S.me);
   const el = $("#user-panel");
 
   if(!el || !S.me) return;
@@ -1033,6 +1033,8 @@ if (profileError) {
   return;
 }
 S.me = profile;
+console.log("PROFILE LOADED", profile);
+console.log("ME STORED", S.me);
 
 if (
   profile.role !== "super_admin" &&
