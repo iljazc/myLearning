@@ -67,7 +67,7 @@ button{
     <p id="msg"></p>
     <p>
     Already have an account?
-    <a href="login.html">Login here</a>
+    <a href="/login.html">Login here</a>
 </p>
 </div>
 
@@ -140,7 +140,7 @@ async function signup(){
         "Account created successfully.";
 
     setTimeout(function(){
-        window.location.href = "/login.html";
+        window.location.replace("/login.html");
     }, 2000);
 }
 
