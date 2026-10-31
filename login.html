@@ -56,6 +56,11 @@ button{
     </button>
 
     <p id="msg"></p>
+    <p>
+  <a href="#" onclick="resetPassword()">
+    Forgot Password?
+  </a>
+</p>
 </div>
 
 <script>
@@ -116,6 +121,36 @@ async function login(){
 
     return;
 }
+}
+async function resetPassword(){
+
+    const email =
+        document.getElementById("email").value.trim();
+
+    if(!email){
+        document.getElementById("msg").textContent =
+            "Enter your email address first.";
+        return;
+    }
+
+    const { error } =
+        await sb.auth.resetPasswordForEmail(
+            email,
+            {
+                redirectTo:
+                    window.location.origin +
+                    "/reset-password.html"
+            }
+        );
+
+    if(error){
+        document.getElementById("msg").textContent =
+            error.message;
+        return;
+    }
+
+    document.getElementById("msg").textContent =
+        "Password reset email sent.";
 }
 
 </script>
