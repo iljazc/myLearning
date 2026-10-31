@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<h2>Create Learner Account</h2>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+body{
+    font-family:system-ui,sans-serif;
+    background:#f5f5f5;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+}
+
+.card{
+    background:white;
+    padding:30px;
+    border-radius:12px;
+    width:320px;
+    box-shadow:0 2px 10px rgba(0,0,0,.1);
+}
+
+input{
+    width:100%;
+    padding:10px;
+    margin-bottom:10px;
+}
+
+button{
+    width:100%;
+    padding:10px;
+    background:#0f6b5c;
+    color:white;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Login</h2>
+
+    <input id="firstName" placeholder="First Name">
+
+<input id="lastName" placeholder="Last Name">
+
+<input id="phone" placeholder="Phone Number">
+
+<input id="password" type="password" placeholder="Password">
+
+<input id="confirmPassword"
+       type="password"
+       placeholder="Confirm Password">
+
+<button onclick="completeProfile()">
+    Complete Profile
+</button>
+
+    <p id="msg"></p>
+    <p>
+    Already have an account?
+    <a href="/login.html">Login here</a>
+</p>
+</div>
+
+<script>
+
+const sb = window.supabase.createClient(
+    "https://aynyitslikigfbwacxnt.supabase.co",
+    "sb_publishable_HvPDMaM4cZ3L-LwqUAOnRw_7Q7efv7H"
+);
+
+async function completeProfile(){
+
+    const firstName =
+        document.getElementById("firstName").value.trim();
+
+    const lastName =
+        document.getElementById("lastName").value.trim();
+
+    const phone =
+        document.getElementById("phone").value.trim();
+
+    const password =
+        document.getElementById("password").value;
+
+    const confirmPassword =
+        document.getElementById("confirmPassword").value;
+
+    if(password !== confirmPassword){
+        document.getElementById("msg").textContent =
+            "Passwords do not match.";
+        return;
+    }
+
+    const {
+        data: { user }
+    } = await sb.auth.getUser();
+
+    if(!user){
+        document.getElementById("msg").textContent =
+            "Invitation session expired.";
+        return;
+    }
+
+    const { error: pwError } =
+        await sb.auth.updateUser({
+            password
+        });
+
+    if(pwError){
+        document.getElementById("msg").textContent =
+            pwError.message;
+        return;
+    }
+
+    const { error: profileError } =
+        await sb
+            .from("profiles")
+            .upsert([
+                {
+                    id: user.id,
+                    email: user.email,
+                    first_name: firstName,
+                    last_name: lastName,
+                    phone: phone,
+                    role: "student",
+                    active: true
+                }
+            ]);
+
+    if(profileError){
+        document.getElementById("msg").textContent =
+            profileError.message;
+        return;
+    }
+
+    document.getElementById("msg").textContent =
+        "Profile completed successfully.";
+
+    setTimeout(function(){
+        window.location.href = "/login.html";
+    },1500);
+}
+
+</script>
+
+</body>
+</html>
