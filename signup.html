@@ -1,10 +1,40 @@
-<input id="firstName" placeholder="First Name">
-<input id="lastName" placeholder="Last Name">
-<input id="phone" placeholder="Phone Number">
-<input id="email" type="email" placeholder="Email">
-<input id="password" type="password" placeholder="Password">
-<input id="confirmPassword" type="password" placeholder="Confirm Password">
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sign Up</title>
+</head>
+<body>
+
+<h2>Create Learner Account</h2>
+
+<input id="firstName" placeholder="First Name"><br><br>
+
+<input id="lastName" placeholder="Last Name"><br><br>
+
+<input id="phone" placeholder="Phone Number"><br><br>
+
+<input id="email" type="email" placeholder="Email"><br><br>
+
+<input id="password" type="password" placeholder="Password"><br><br>
+
+<input id="confirmPassword" type="password" placeholder="Confirm Password"><br><br>
 
 <button onclick="signup()">
-  Create Account
+    Create Account
 </button>
+
+<div id="msg"></div>
+
+<p>
+    Already have an account?
+    <a href="login.html">Login here</a>
+</p>
+
+<script>
+function signup(){
+    alert("Signup button works");
+}
+</script>
+
+</body>
+</html>
