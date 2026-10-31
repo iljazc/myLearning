@@ -458,6 +458,14 @@ function usersV(){
     return h;
   }
 
+  h +=
+  '<div class="row">' +
+  '<input class="in" id="invite-email" placeholder="Learner email">' +
+  '<button class="btn" data-invite="1">' +
+  'Invite Learner' +
+  '</button>' +
+  '</div>';
+
   h += '<ul>';
 
   h += S.users.map(function(u){
@@ -667,7 +675,28 @@ document.addEventListener("click", async function(ev){
 });return}
   if(d.delcfg){var k=d.delcfg.split("|"),key=k[0]+k[1];if(S.arm!==key){S.arm=key;render();return}S.arm=null;
     var c=JSON.parse(JSON.stringify(S.cfg));if(k[0]==="a")c.activities=c.activities.filter(function(a){return a.id!==k[1]});else c.assessments=c.assessments.filter(function(a){return a.id!==k[1]});saveCfg(c);toast("Removed.");return}
-  if(d.disable){
+  
+  if(d.invite){
+
+  var email =
+    ($("#invite-email") || {}).value || "";
+
+  email = email.trim();
+
+  if(!email){
+    toast("Enter an email address.",true);
+    return;
+  }
+
+  toast(
+    "Invitation flow coming next. Email captured: " +
+    email
+  );
+
+  return;
+}
+  
+    if(d.disable){
 
   var user = S.users.find(function(u){
     return u.id === d.disable;
