@@ -187,7 +187,7 @@ function summary(l){
 }
 
 function renderUserPanel(){
-console.log("USER PANEL DATA", S.me);
+//console.log("USER PANEL DATA", S.me);
   const el = $("#user-panel");
 
   if(!el || !S.me) return;
@@ -910,8 +910,8 @@ case"dell":{
     .eq("id", id)
     .select();
 
-  console.log("DELETE DATA:", data);
-  console.log("DELETE ERROR:", error);
+  //console.log("DELETE DATA:", data);
+  //console.log("DELETE ERROR:", error);
 
   if(error){
     throw error;
@@ -1033,8 +1033,8 @@ if (profileError) {
   return;
 }
 S.me = profile;
-console.log("PROFILE LOADED", profile);
-console.log("ME STORED", S.me);
+//console.log("PROFILE LOADED", profile);
+//console.log("ME STORED", S.me);
 
 if (
   profile.role !== "super_admin" &&
