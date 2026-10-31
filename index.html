@@ -338,6 +338,7 @@ h1{font:700 clamp(26px,4vw,38px)/1.1 var(--f-display);letter-spacing:-.02em;marg
 </div>
 <div class="toasts" id="toasts" aria-live="polite"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const KEY="unit-study-hub-8202";
 const SHARE_LINK="https://claude.ai/artifact/UQ7cejpFm1yjKLfsDiW7XP";
@@ -367,7 +368,10 @@ const ICON={
  key:SVG('<circle cx="8" cy="15" r="4"/><path d="m11 12 9-9M16 7l3 3M14 9l2 2"/>')
 };
 const ATABS=[["overview","Overview","grid"],["activities","Activities","acts"],["presentations","Presentations","slides"],["learners","Progress","users"],["access","Access","key"]];
-
+const sb = window.supabase.createClient(
+    "https://aynyitslikigfbwacxnt.supabase.co",
+    "sb_publishable_HvPDMaM4cZ3L-LwqUAOnRw_7Q7efv7H"
+);
 /* ---------- helpers ---------- */
 const $=s=>document.querySelector(s);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
