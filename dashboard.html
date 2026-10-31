@@ -489,7 +489,16 @@ function usersV(){
 
       '<button class="btn sm" data-promote="' +
       esc(u.id) +
-      '">Change Role</button>' +
+      '">' +
+      (
+        u.role === "student"
+          ? "Promote to Staff"
+          : u.role === "staff"
+          ? "Promote to Admin"
+          : "Make Student"
+      ) +
+
+      '</button>' +
 
       '</li>'
     );
