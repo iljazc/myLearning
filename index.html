@@ -1049,13 +1049,63 @@ function setView(v){S.view=v;store.view=v;savePrefs();render()}
 function goto(n){S.view="slides";store.view="slides";S.i=Math.max(0,Math.min(S.data.slides.length-1,n-1));savePrefs();render();$("#main").scrollTop=0}
 
 async function boot(){
-  try{const r=await fetch("data/index.json");if(!r.ok)throw new Error(r.status);S.idx=await r.json()}
-  catch(e){$("#wrap").innerHTML='<div class="state">The unit list could not be loaded. Refresh the page to try again.</div>';return}
+
+  try{
+    const r = await fetch("data/index.json");
+    if(!r.ok) throw new Error(r.status);
+    S.idx = await r.json();
+  }
+  catch(e){
+    $("#wrap").innerHTML =
+      '<div class="state">The unit list could not be loaded. Refresh the page to try again.</div>';
+    return;
+  }
+
+  const {
+    data: { session }
+  } = await sb.auth.getSession();
+
+  if(!session){
+
+    window.location.href = "/login.html";
+    return;
+  }
+
+  const { data: profile } = await sb
+    .from("profiles")
+    .select("*")
+    .eq("id", session.user.id)
+    .single();
+
+  if(profile){
+
+    S.me = {
+      id: profile.id,
+      name:
+        (profile.first_name || "") +
+        " " +
+        (profile.last_name || ""),
+      avatar: "",
+      role: profile.role || "student",
+      loaded: true
+    };
+    console.log("CURRENT USER", S.me);
+
+
+  }
+
   deriveUnits();
+
   const hash=(location.hash||"").replace("#","");
   if(hash==="admin")S.pendingAdmin=true;
   else if(hash&&!findMeta(hash))S.pendingHash=hash;
-  const pick=findMeta(hash)?hash:(findMeta(store.deck)?store.deck:firstDeck());
+
+  const pick=findMeta(hash)
+    ? hash
+    : (findMeta(store.deck)
+        ? store.deck
+        : firstDeck());
+
   updateChip();
   openDeck(pick);
   initCaps();
