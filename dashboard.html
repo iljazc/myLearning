@@ -638,11 +638,73 @@ document.addEventListener("click", async function(ev){
 
   return;
 }
+  
   if(d.act2){var q=d.act2.split("|"),l2=L(q[0]);if(!l2)return;var n2=NEXT[actSt(l2,q[1])];l2.acts=Object.assign({},l2.acts);l2.acts[q[1]]={s:n2,d:Date.now()};render();upd(l2.id,{
   acts:Object.assign({},l2.acts)
 });return}
   if(d.delcfg){var k=d.delcfg.split("|"),key=k[0]+k[1];if(S.arm!==key){S.arm=key;render();return}S.arm=null;
     var c=JSON.parse(JSON.stringify(S.cfg));if(k[0]==="a")c.activities=c.activities.filter(function(a){return a.id!==k[1]});else c.assessments=c.assessments.filter(function(a){return a.id!==k[1]});saveCfg(c);toast("Removed.");return}
+  if(d.promote){
+
+  var user = S.users.find(function(u){
+    return u.id === d.promote;
+  });
+
+  if(!user) return;
+
+  var nextRole =
+    u.role === "student"
+    ? "Promote to Staff"
+    : u.role === "staff"
+    ? "Promote to Admin"
+    : "Make Student";
+
+  const { error } = await sb
+    .from("profiles")
+    .update({
+      role: nextRole
+    })
+    .eq("id", user.id);
+
+  if(error){
+    console.error(error);
+    toast("Role update failed.", true);
+    return;
+  }
+
+  user.role = nextRole;
+
+  render();
+
+  toast("Role updated.");
+
+  return;
+}
+
+if(d.delcfg){
+  var k=d.delcfg.split("|"),key=k[0]+k[1];
+  if(S.arm!==key){
+    S.arm=key;
+    render();
+    return;
+  }
+  S.arm=null;
+
+  var c=JSON.parse(JSON.stringify(S.cfg));
+
+  if(k[0]==="a")
+    c.activities=c.activities.filter(function(a){
+      return a.id!==k[1];
+    });
+  else
+    c.assessments=c.assessments.filter(function(a){
+      return a.id!==k[1];
+    });
+
+  saveCfg(c);
+  toast("Removed.");
+  return;
+}
   switch(d.act){
     case"back":S.sel=null;S.arm=null;S.tab="learners";render();break;
     case"addl":{var txt=($("#addTxt")||{}).value||"";var rows=txt.split(/\r?\n/).map(function(x){var a=x.split(",");return{name:a[0],group:a.slice(1).join(",")}});var pl=plan(rows);S.draft.add="";if(!pl.fresh.length&&!pl.upd.length){toast("Nothing new to add. Names that already exist are skipped.");break}applyPlan(pl).then(function(f){toast(f?"Added with "+f+" that could not be saved. Try those again.":"Added "+pl.fresh.length+" learner"+(pl.fresh.length===1?"":"s")+".",!!f)});break}
