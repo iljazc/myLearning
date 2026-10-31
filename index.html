@@ -549,9 +549,53 @@ function onSite(){
 function onResults(){if(S.page==="admin")fillAdminLists()}
 function updateGate(){$("#gate").hidden=!(S.hasHost&&S.me.loaded&&!S.me.id&&!S.guestOK)}
 function updateChip(){
-  const el=$("#me");if(!el)return;
-  el.innerHTML=(S.me.id&&S.me.avatar?'<img src="'+esc(S.me.avatar)+'" alt="">':"")+'<div class="who"><b>'+esc(S.me.name||(S.me.id?"Signed in":"Guest"))+'</b><span class="role r-'+S.me.role+'">'+roleLabel()+'</span></div>';
-  $("#saveNote").textContent=S.me.id&&CAP.db&&S.cloud!==false?"Your progress is saved to your account.":"Your progress is saved on this device.";
+
+  const el=$("#me");
+  if(!el) return;
+
+  el.innerHTML =
+    (S.me.id && S.me.avatar
+      ? '<img src="'+esc(S.me.avatar)+'" alt="">'
+      : '') +
+
+    '<div class="who">' +
+
+      '<b>' +
+      esc(
+        S.me.name ||
+        (S.me.id ? "Signed in" : "Guest")
+      ) +
+      '</b>' +
+
+      '<span class="role r-'+S.me.role+'">' +
+      roleLabel() +
+      '</span>' +
+
+      (S.me.id
+        ? '<button id="logoutBtn" class="btn sm" style="margin-top:8px">Sign Out</button>'
+        : '') +
+
+    '</div>';
+
+  $("#saveNote").textContent =
+    S.me.id && CAP.db && S.cloud!==false
+      ? "Your progress is saved to your account."
+      : "Your progress is saved on this device.";
+
+  const btn = $("#logoutBtn");
+
+  if(btn){
+
+    btn.onclick = async function(){
+
+      await sb.auth.signOut();
+
+      window.location.href =
+        "/login.html";
+
+    };
+
+  }
 }
 
 /* ---------- sidebar ---------- */
@@ -1066,14 +1110,16 @@ async function boot(){
   }
 
   const {
-    data: { session }
-  } = await sb.auth.getSession();
+  data: { session }
+} = await sb.auth.getSession();
 
-  if(!session){
+if(!session){
 
-    window.location.href = "/login.html";
+    window.location.href =
+      "/login.html";
+
     return;
-  }
+}
 
   const { data: profile } = await sb
     .from("profiles")
