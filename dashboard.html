@@ -662,12 +662,12 @@ document.addEventListener("click", async function(ev){
   if(!user) return;
 
   var nextRole =
-    u.role === "student"
-    ? "Promote to Staff"
-    : u.role === "staff"
-    ? "Promote to Admin"
-    : "Make Student";
-
+    user.role === "student"
+      ? "staff"
+      : user.role === "staff"
+      ? "super_admin"
+      : "student";
+      
   const { error } = await sb
     .from("profiles")
     .update({
