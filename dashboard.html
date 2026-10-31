@@ -96,13 +96,41 @@ ul{margin:0;padding:0}
 .seg .chip[aria-pressed="false"]{opacity:.45}
 @media (max-width:560px){h1{font-size:24px}.urow{grid-template-columns:54px 1fr}.urow .sub{grid-column:2}}
 @media (prefers-reduced-motion:no-preference){.tab,.btn{transition:background .15s,border-color .15s}}
+#user-panel{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+#user-panel .who{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  gap:4px;
+}
+
+#user-panel .sub{
+  font-size:12px;
+  color:var(--muted);
+}
+
+#user-panel .btn{
+  margin-top:4px;
+}
+
 </style>
 
 <div class="wrap">
   <header class="top">
-    <div><div class="eyebrow">Level 2 Electrical Installation &middot; 8202</div><h1>Learner Progress Tracker</h1></div>
-    <nav class="tabs" role="tablist" aria-label="Sections" id="tabs"></nav>
-  </header>
+  <div>
+    <div class="eyebrow">Level 2 Electrical Installation · 8202</div>
+    <h1>Learner Progress Tracker</h1>
+  </div>
+
+  <nav class="tabs" role="tablist" aria-label="Sections" id="tabs"></nav>
+
+  <div id="user-panel"></div>
+</header>
   <main id="main"><div class="empty"><b>Loading</b>Opening the tracker.</div></main>
 </div>
 <div id="toast" class="toast" hidden role="status"></div>
@@ -157,6 +185,51 @@ function summary(l){
   var pass=tests.filter(function(t){return testRes(l,t)==="pass"}).length;
   return{ud:ud,up:up,ad:ad,at:actList().length,tests:tests.length,pass:pass};
 }
+
+function renderUserPanel(){
+
+  const el = $("#user-panel");
+
+  if(!el || !S.me) return;
+
+  el.innerHTML =
+    '<div class="who">' +
+
+      '<b>' +
+      esc(
+        (S.me.first_name || '') +
+        ' ' +
+        (S.me.last_name || '')
+      ) +
+      '</b>' +
+
+      '<div class="sub">' +
+
+      (
+        S.me.role === "super_admin"
+          ? "Super Admin"
+          : S.me.role === "staff"
+          ? "Staff"
+          : "Student"
+      ) +
+
+      '</div>' +
+
+      '<button id="logoutBtn" class="btn sm">' +
+      'Sign Out' +
+      '</button>' +
+
+    '</div>';
+
+  $("#logoutBtn").onclick = async function(){
+
+    await sb.auth.signOut();
+
+    window.location.href = "/login.html";
+
+  };
+}
+
 
 /* ---------- writes ---------- */
 function write(key,fn){
@@ -424,6 +497,7 @@ else{
   var n=$("#nd");if(n)n.value=S.draft.note;
   var a=$("#addTxt");if(a)a.value=S.draft.add;
   var q=$("#q");if(q&&ae&&ae.id==="q"){q.focus();try{q.setSelectionRange(q.value.length,q.value.length)}catch(e){}}
+  renderUserPanel();
 }
 
 function overviewV(){
@@ -958,6 +1032,7 @@ if (profileError) {
   window.location.href = "login.html";
   return;
 }
+S.me = profile;
 
 if (
   profile.role !== "super_admin" &&
@@ -979,7 +1054,7 @@ if (
       .select("*")
       .eq("id", "main")
       .single();
-
+  
   if (configError) {
     console.error("Config error:", configError);
   } else {
