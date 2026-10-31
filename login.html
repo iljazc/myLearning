@@ -107,6 +107,15 @@ async function login(){
     } else {
         window.location.href = "index.html";
     }
+    if(profile.active === false){
+
+    await sb.auth.signOut();
+
+    document.getElementById("msg").textContent =
+        "This account has been disabled.";
+
+    return;
+}
 }
 
 </script>

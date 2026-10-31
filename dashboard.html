@@ -484,9 +484,23 @@ function usersV(){
       '</span>' +
 
       '<span class="chip n">' +
-      esc(u.role || 'student') +
-      '</span>' +
+esc(u.role || 'student') +
+'</span>' +
 
+'<span class="chip">' +
+(u.active === false
+  ? 'inactive'
+  : 'active') +
+'</span>' +
+'<button class="btn sm bad" data-disable="' +
+esc(u.id) +
+'">' +
+
+(u.active === false
+  ? 'Enable'
+  : 'Disable') +
+
+'</button>' +
       '<button class="btn sm" data-promote="' +
       esc(u.id) +
       '">' +
@@ -653,7 +667,51 @@ document.addEventListener("click", async function(ev){
 });return}
   if(d.delcfg){var k=d.delcfg.split("|"),key=k[0]+k[1];if(S.arm!==key){S.arm=key;render();return}S.arm=null;
     var c=JSON.parse(JSON.stringify(S.cfg));if(k[0]==="a")c.activities=c.activities.filter(function(a){return a.id!==k[1]});else c.assessments=c.assessments.filter(function(a){return a.id!==k[1]});saveCfg(c);toast("Removed.");return}
-  if(d.promote){
+  if(d.disable){
+
+  var user = S.users.find(function(u){
+    return u.id === d.disable;
+  });
+
+  if(!user) return;
+
+  if(user.id === S.me){
+    toast(
+      "You cannot disable your own account.",
+      true
+    );
+    return;
+  }
+
+  const { error } = await sb
+    .from("profiles")
+    .update({
+      active: !user.active
+    })
+    .eq("id", user.id);
+
+  if(error){
+    console.error(error);
+    toast(
+      "Unable to update account.",
+      true
+    );
+    return;
+  }
+
+  user.active = !user.active;
+
+  render();
+
+  toast(
+    user.active
+      ? "Account enabled."
+      : "Account disabled."
+  );
+
+  return;
+}
+    if(d.promote){
 
   var user = S.users.find(function(u){
     return u.id === d.promote;
@@ -667,7 +725,7 @@ document.addEventListener("click", async function(ev){
       : user.role === "staff"
       ? "super_admin"
       : "student";
-      
+
   const { error } = await sb
     .from("profiles")
     .update({
