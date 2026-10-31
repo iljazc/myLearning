@@ -488,7 +488,8 @@ function setupV(){
   var uo=UNITS.map(function(u){return'<option value="'+u+'">Unit '+u+"</option>"}).join("");
   var h='<div class="stack"><section class="panel"><h2>Activities and worksheets</h2><p class="sub" style="margin-top:0">Use the same titles as in the study hub so you can compare them.</p>';
   h+=actList().length?"<ul>"+actList().map(function(a){return'<li class="item"><span class="chip n">'+esc(a.unit)+'</span><span class="t">'+esc(a.title)+'</span><button class="btn sm bad" data-delcfg="a|'+esc(a.id)+'">'+(S.arm==="a"+a.id?"Confirm remove":"Remove")+"</button></li>"}).join("")+"</ul>":'<div class="empty" style="margin-bottom:10px">None yet.</div>';
-  h+='<div class="grid2" style="margin-top:12px"><div><label class="l" for="na-u">Unit</label><select class="in" id="na-u">'+uo+'</select></div><div><label class="l" for="na-t">Title</label><input class="in" id="na-t" maxlength="120" placeholder="Worksheet 1: Health and safety"></div></div><div class="row" style="margin-top:10px"><button class="btn primary" data-act="adda">Add activity</button></div></section>';
+  h+='<div class="grid2" style="margin-top:12px"><div><label class="l" for="na-u">Unit</label><select class="in" id="na-u">'+uo+'</select></div><div><label class="l" for="na-t">Title</label><input class="in" id="na-t" maxlength="120" placeholder="Worksheet 1: Health and safety"></div></div><div style="margin-top:10px"><label class="l" for="na-file">Resource File (PDF or DOCX)</label><input class="in" id="na-file" type="file" accept=".pdf,.doc,.docx"></div><div class="row" style="margin-top:10px"><button class="btn primary" data-act="adda">Add activity</button></div></section>';
+
   h+='<section class="panel"><h2>Assessments</h2><p class="sub" style="margin-top:0">A learner whose score is below the pass mark is marked as referred.</p>';
   h+=S.cfg.assessments.length?"<ul>"+S.cfg.assessments.map(function(t){return'<li class="item"><span class="chip n">'+esc(t.unit)+'</span><span class="t">'+esc(t.title)+'<div class="sub">Pass mark '+esc(t.pass)+" of "+esc(t.max)+'</div></span><button class="btn sm bad" data-delcfg="t|'+esc(t.id)+'">'+(S.arm==="t"+t.id?"Confirm remove":"Remove")+"</button></li>"}).join("")+"</ul>":'<div class="empty" style="margin-bottom:10px">None yet.</div>';
   h+='<div class="grid2" style="margin-top:12px"><div><label class="l" for="nt-u">Unit</label><select class="in" id="nt-u">'+uo+'</select></div><div><label class="l" for="nt-t">Title</label><input class="in" id="nt-t" maxlength="120" placeholder="Unit 201 end test"></div><div><label class="l" for="nt-m">Total marks</label><input class="in" id="nt-m" type="number" min="1" value="40"></div><div><label class="l" for="nt-p">Pass mark</label><input class="in" id="nt-p" type="number" min="0" value="24"></div></div><div class="row" style="margin-top:10px"><button class="btn primary" data-act="addt">Add assessment</button></div></section></div>';
@@ -541,7 +542,7 @@ async function exportCsv(){
 }
 
 /* ---------- events ---------- */
-document.addEventListener("click",function(ev){
+document.addEventListener("click", async function(ev){
   var t=ev.target.closest("button");if(!t)return;var d=t.dataset;
   if(d.tab){S.tab=d.tab;S.sel=null;S.arm=null;render();return}
   if(d.open){S.sel=d.open;S.arm=null;render();window.scrollTo(0,0);return}
@@ -615,7 +616,71 @@ case"dell":{
   toast("Learner removed.");
   break;
 }
-    case"adda":{var ti=$("#na-t").value.trim();if(!ti){toast("Give the activity a title.",true);return}var c2=JSON.parse(JSON.stringify(S.cfg));c2.activities.push({id:uid(),unit:$("#na-u").value,title:ti.slice(0,120)});saveCfg(c2);toast("Activity added.");break}
+case"adda":{
+
+  var ti=$("#na-t").value.trim();
+
+  if(!ti){
+    toast("Give the activity a title.",true);
+    return;
+  }
+
+  var file = ($("#na-file")||{}).files
+    ? $("#na-file").files[0]
+    : null;
+
+  var fileUrl = "";
+  var fileName = "";
+  var fileType = "";
+
+  if(file){
+
+    var path =
+      "activities/" +
+      Date.now() +
+      "-" +
+      file.name;
+
+    const { error: uploadError } =
+      await sb.storage
+        .from("learning-files")
+        .upload(path,file);
+
+    if(uploadError){
+      console.error(uploadError);
+      toast("File upload failed.",true);
+      return;
+    }
+
+    const { data: publicData } =
+      sb.storage
+        .from("learning-files")
+        .getPublicUrl(path);
+
+    fileUrl = publicData.publicUrl;
+    fileName = file.name;
+    fileType =
+      file.name.split(".").pop().toLowerCase();
+  }
+
+  var c2 =
+    JSON.parse(JSON.stringify(S.cfg));
+
+  c2.activities.push({
+    id: uid(),
+    unit: $("#na-u").value,
+    title: ti.slice(0,120),
+    fileName: fileName,
+    fileUrl: fileUrl,
+    fileType: fileType
+  });
+
+  saveCfg(c2);
+
+  toast("Activity added.");
+
+  break;
+}
     case"addt":{var tt=$("#nt-t").value.trim(),mx=+$("#nt-m").value,ps=+$("#nt-p").value;if(!tt){toast("Give the assessment a title.",true);return}if(!(mx>0)||!(ps>=0)||ps>mx){toast("Check the marks. The pass mark can't be more than the total.",true);return}var c3=JSON.parse(JSON.stringify(S.cfg));c3.assessments.push({id:uid(),unit:$("#nt-u").value,title:tt.slice(0,120),max:mx,pass:ps});saveCfg(c3);toast("Assessment added.");break}
     case"export":exportCsv();break;
   }

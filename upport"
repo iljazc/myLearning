@@ -1,0 +1,96 @@
+[1mdiff --git a/dashboard.html b/dashboard.html[m
+[1mindex c97f1c6..b700cc9 100644[m
+[1m--- a/dashboard.html[m
+[1m+++ b/dashboard.html[m
+[36m@@ -488,7 +488,8 @@[m [mfunction setupV(){[m
+   var uo=UNITS.map(function(u){return'<option value="'+u+'">Unit '+u+"</option>"}).join("");[m
+   var h='<div class="stack"><section class="panel"><h2>Activities and worksheets</h2><p class="sub" style="margin-top:0">Use the same titles as in the study hub so you can compare them.</p>';[m
+   h+=actList().length?"<ul>"+actList().map(function(a){return'<li class="item"><span class="chip n">'+esc(a.unit)+'</span><span class="t">'+esc(a.title)+'</span><button class="btn sm bad" data-delcfg="a|'+esc(a.id)+'">'+(S.arm==="a"+a.id?"Confirm remove":"Remove")+"</button></li>"}).join("")+"</ul>":'<div class="empty" style="margin-bottom:10px">None yet.</div>';[m
+[31m-  h+='<div class="grid2" style="margin-top:12px"><div><label class="l" for="na-u">Unit</label><select class="in" id="na-u">'+uo+'</select></div><div><label class="l" for="na-t">Title</label><input class="in" id="na-t" maxlength="120" placeholder="Worksheet 1: Health and safety"></div></div><div class="row" style="margin-top:10px"><button class="btn primary" data-act="adda">Add activity</button></div></section>';[m
+[32m+[m[32m  h+='<div class="grid2" style="margin-top:12px"><div><label class="l" for="na-u">Unit</label><select class="in" id="na-u">'+uo+'</select></div><div><label class="l" for="na-t">Title</label><input class="in" id="na-t" maxlength="120" placeholder="Worksheet 1: Health and safety"></div></div><div style="margin-top:10px"><label class="l" for="na-file">Resource File (PDF or DOCX)</label><input class="in" id="na-file" type="file" accept=".pdf,.doc,.docx"></div><div class="row" style="margin-top:10px"><button class="btn primary" data-act="adda">Add activity</button></div></section>';[m
+[32m+[m
+   h+='<section class="panel"><h2>Assessments</h2><p class="sub" style="margin-top:0">A learner whose score is below the pass mark is marked as referred.</p>';[m
+   h+=S.cfg.assessments.length?"<ul>"+S.cfg.assessments.map(function(t){return'<li class="item"><span class="chip n">'+esc(t.unit)+'</span><span class="t">'+esc(t.title)+'<div class="sub">Pass mark '+esc(t.pass)+" of "+esc(t.max)+'</div></span><button class="btn sm bad" data-delcfg="t|'+esc(t.id)+'">'+(S.arm==="t"+t.id?"Confirm remove":"Remove")+"</button></li>"}).join("")+"</ul>":'<div class="empty" style="margin-bottom:10px">None yet.</div>';[m
+   h+='<div class="grid2" style="margin-top:12px"><div><label class="l" for="nt-u">Unit</label><select class="in" id="nt-u">'+uo+'</select></div><div><label class="l" for="nt-t">Title</label><input class="in" id="nt-t" maxlength="120" placeholder="Unit 201 end test"></div><div><label class="l" for="nt-m">Total marks</label><input class="in" id="nt-m" type="number" min="1" value="40"></div><div><label class="l" for="nt-p">Pass mark</label><input class="in" id="nt-p" type="number" min="0" value="24"></div></div><div class="row" style="margin-top:10px"><button class="btn primary" data-act="addt">Add assessment</button></div></section></div>';[m
+[36m@@ -541,7 +542,7 @@[m [masync function exportCsv(){[m
+ }[m
+ [m
+ /* ---------- events ---------- */[m
+[31m-document.addEventListener("click",function(ev){[m
+[32m+[m[32mdocument.addEventListener("click", async function(ev){[m
+   var t=ev.target.closest("button");if(!t)return;var d=t.dataset;[m
+   if(d.tab){S.tab=d.tab;S.sel=null;S.arm=null;render();return}[m
+   if(d.open){S.sel=d.open;S.arm=null;render();window.scrollTo(0,0);return}[m
+[36m@@ -615,7 +616,71 @@[m [mcase"dell":{[m
+   toast("Learner removed.");[m
+   break;[m
+ }[m
+[31m-    case"adda":{var ti=$("#na-t").value.trim();if(!ti){toast("Give the activity a title.",true);return}var c2=JSON.parse(JSON.stringify(S.cfg));c2.activities.push({id:uid(),unit:$("#na-u").value,title:ti.slice(0,120)});saveCfg(c2);toast("Activity added.");break}[m
+[32m+[m[32mcase"adda":{[m
+[32m+[m
+[32m+[m[32m  var ti=$("#na-t").value.trim();[m
+[32m+[m
+[32m+[m[32m  if(!ti){[m
+[32m+[m[32m    toast("Give the activity a title.",true);[m
+[32m+[m[32m    return;[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  var file = ($("#na-file")||{}).files[m
+[32m+[m[32m    ? $("#na-file").files[0][m
+[32m+[m[32m    : null;[m
+[32m+[m
+[32m+[m[32m  var fileUrl = "";[m
+[32m+[m[32m  var fileName = "";[m
+[32m+[m[32m  var fileType = "";[m
+[32m+[m
+[32m+[m[32m  if(file){[m
+[32m+[m
+[32m+[m[32m    var path =[m
+[32m+[m[32m      "activities/" +[m
+[32m+[m[32m      Date.now() +[m
+[32m+[m[32m      "-" +[m
+[32m+[m[32m      file.name;[m
+[32m+[m
+[32m+[m[32m    const { error: uploadError } =[m
+[32m+[m[32m      await sb.storage[m
+[32m+[m[32m        .from("learning-files")[m
+[32m+[m[32m        .upload(path,file);[m
+[32m+[m
+[32m+[m[32m    if(uploadError){[m
+[32m+[m[32m      console.error(uploadError);[m
+[32m+[m[32m      toast("File upload failed.",true);[m
+[32m+[m[32m      return;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    const { data: publicData } =[m
+[32m+[m[32m      sb.storage[m
+[32m+[m[32m        .from("learning-files")[m
+[32m+[m[32m        .getPublicUrl(path);[m
+[32m+[m
+[32m+[m[32m    fileUrl = publicData.publicUrl;[m
+[32m+[m[32m    fileName = file.name;[m
+[32m+[m[32m    fileType =[m
+[32m+[m[32m      file.name.split(".").pop().toLowerCase();[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  var c2 =[m
+[32m+[m[32m    JSON.parse(JSON.stringify(S.cfg));[m
+[32m+[m
+[32m+[m[32m  c2.activities.push({[m
+[32m+[m[32m    id: uid(),[m
+[32m+[m[32m    unit: $("#na-u").value,[m
+[32m+[m[32m    title: ti.slice(0,120),[m
+[32m+[m[32m    fileName: fileName,[m
+[32m+[m[32m    fileUrl: fileUrl,[m
+[32m+[m[32m    fileType: fileType[m
+[32m+[m[32m  });[m
+[32m+[m
+[32m+[m[32m  saveCfg(c2);[m
+[32m+[m
+[32m+[m[32m  toast("Activity added.");[m
+[32m+[m
+[32m+[m[32m  break;[m
+[32m+[m[32m}[m
+     case"addt":{var tt=$("#nt-t").value.trim(),mx=+$("#nt-m").value,ps=+$("#nt-p").value;if(!tt){toast("Give the assessment a title.",true);return}if(!(mx>0)||!(ps>=0)||ps>mx){toast("Check the marks. The pass mark can't be more than the total.",true);return}var c3=JSON.parse(JSON.stringify(S.cfg));c3.assessments.push({id:uid(),unit:$("#nt-u").value,title:tt.slice(0,120),max:mx,pass:ps});saveCfg(c3);toast("Assessment added.");break}[m
+     case"export":exportCsv();break;[m
+   }[m
