@@ -667,7 +667,58 @@ function detailV(l){
 function setupV(){
   var uo=UNITS.map(function(u){return'<option value="'+u+'">Unit '+u+"</option>"}).join("");
   var h='<div class="stack"><section class="panel"><h2>Activities and worksheets</h2><p class="sub" style="margin-top:0">Use the same titles as in the study hub so you can compare them.</p>';
-  h+=actList().length?"<ul>"+actList().map(function(a){return'<li class="item"><span class="chip n">'+esc(a.unit)+'</span><span class="t">'+esc(a.title)+'</span><button class="btn sm bad" data-delcfg="a|'+esc(a.id)+'">'+(S.arm==="a"+a.id?"Confirm remove":"Remove")+"</button></li>"}).join("")+"</ul>":'<div class="empty" style="margin-bottom:10px">None yet.</div>';
+h+=actList().length
+  ? "<ul>" + actList().map(function(a){
+
+      return (
+        '<li class="item">' +
+
+          '<span class="chip n">' +
+          esc(a.unit) +
+          '</span>' +
+
+          '<span class="t">' +
+
+            esc(a.title) +
+
+            (
+              a.fileName
+                ? '<div class="sub">' +
+                    esc(a.fileName) +
+                  '</div>'
+                : ''
+            ) +
+
+          '</span>' +
+
+          (
+            a.fileUrl
+              ? '<a class="btn sm" href="' +
+                  esc(a.fileUrl) +
+                  '" target="_blank">' +
+                  'Open File' +
+                '</a>'
+              : ''
+          ) +
+
+          '<button class="btn sm bad" data-delcfg="a|' +
+          esc(a.id) +
+          '">' +
+
+          (
+            S.arm==="a"+a.id
+              ? "Confirm remove"
+              : "Remove"
+          ) +
+
+          '</button>' +
+
+        '</li>'
+      );
+
+    }).join("") + "</ul>"
+  : '<div class="empty" style="margin-bottom:10px">None yet.</div>';
+  
   h+='<div class="grid2" style="margin-top:12px"><div><label class="l" for="na-u">Unit</label><select class="in" id="na-u">'+uo+'</select></div><div><label class="l" for="na-t">Title</label><input class="in" id="na-t" maxlength="120" placeholder="Worksheet 1: Health and safety"></div></div><div style="margin-top:10px"><label class="l" for="na-file">Resource File (PDF or DOCX)</label><input class="in" id="na-file" type="file" accept=".pdf,.doc,.docx"></div><div class="row" style="margin-top:10px"><button class="btn primary" data-act="adda">Add activity</button></div></section>';
 
   h+='<section class="panel"><h2>Assessments</h2><p class="sub" style="margin-top:0">A learner whose score is below the pass mark is marked as referred.</p>';
