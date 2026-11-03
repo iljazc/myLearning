@@ -1119,39 +1119,37 @@ if (
 
   // Load learners
   const { data: usersData, error: usersError } =
-    await sb
-      .from("profiles")
-      .select("*");
+  await sb
+    .from("profiles")
+    .select("*");
 
-if (learnersError) {
-  console.error("Learners error:", learnersError);
+if (usersError) {
+  console.error("Users error:", usersError);
 } else {
 
-  S.learners = (S.users || [])
-  .filter(function(u){
-    return u.role === "student";
-  })
-  .map(function(u){
+  S.users = usersData || [];
 
-    return {
-      id: u.id,
-      name:
-        ((u.first_name || "") +
-        " " +
-        (u.last_name || "")).trim(),
-
-      group: "",
-      learner_group: "",
-
-      units: {},
-      acts: {},
-      tests: {},
-      notes: [],
-
-      email: u.email
-    };
-
-  });
+  S.learners = S.users
+    .filter(function(u){
+      return u.role === "student";
+    })
+    .map(function(u){
+      return {
+        id: u.id,
+        name: (
+          (u.first_name || "") +
+          " " +
+          (u.last_name || "")
+        ).trim(),
+        group: "",
+        learner_group: "",
+        units: {},
+        acts: {},
+        tests: {},
+        notes: [],
+        email: u.email
+      };
+    });
 
   S.learnersReady = true;
 }
