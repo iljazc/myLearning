@@ -632,7 +632,20 @@ function learnersV(){
     rows.map(function(l){var s=summary(l),f=flags(l).length;
       return'<tr><td><button class="lname" data-open="'+esc(l.id)+'">'+esc(l.name)+"</button>"+(l.group?'<div class="sub">'+esc(l.group)+"</div>":"")+"</td>"+
         UNITS.map(function(u){var st=unitSt(l,u);return'<td><button class="chip '+st+'" data-unit="'+esc(l.id)+'|'+u+'" title="Click to change" aria-label="Unit '+u+' for '+esc(l.name)+': '+ST[st]+'. Click to change.">'+(st==="d"?"Done":st==="p"?"In progress":"Not started")+"</button></td>"}).join("")+
-        '<td class="n">'+(s.at?s.ad+" of "+s.at:"-")+'</td><td class="n">'+(s.tests?s.pass+" of "+s.tests+" passed":"-")+"</td><td>"+(f?'<span class="chip bad" title="'+esc(flags(l).join(". "))+'">Check</span>':"")+"</td></tr>"}).join("")+"</tbody></table></div>"+
+        '<td class="n">'+(s.at?s.ad+" of "+s.at:"-")+'</td><td class="n">'+(s.tests?s.pass+" of "+s.tests+" passed":"-")+"</td><td>" +
+
+(f
+  ? '<span class="chip bad" title="' +
+      esc(flags(l).join(". ")) +
+      '">Check</span>'
+  : ''
+) +
+
+' <button class="btn sm bad" data-deactivate="' +
+esc(l.id) +
+'">Deactivate</button>' +
+
+"</td></tr>"}).join("")+"</tbody></table></div>"+
     '<p class="sub" style="margin:0">Click a unit status to move it from not started to in progress to done. Click a name for the full record.</p>';
   h+=addPanel()+"</div>";
   return h;
@@ -817,6 +830,52 @@ document.addEventListener("click", async function(ev){
     "Invitation flow coming next. Email captured: " +
     email
   );
+
+  return;
+}
+
+if(d.deactivate){
+
+  if(!confirm(
+    "Deactivate this learner?"
+  )){
+    return;
+  }
+
+  const { error } =
+    await sb
+      .from("profiles")
+      .update({
+        active:false
+      })
+      .eq("id", d.deactivate);
+
+  if(error){
+    console.error(error);
+    toast(
+      "Could not deactivate learner.",
+      true
+    );
+    return;
+  }
+
+  S.users = S.users.map(function(u){
+
+    if(u.id === d.deactivate){
+      u.active = false;
+    }
+
+    return u;
+
+  });
+
+  S.learners = S.learners.filter(function(l){
+    return l.id !== d.deactivate;
+  });
+
+  render();
+
+  toast("Learner deactivated.");
 
   return;
 }
@@ -1131,8 +1190,12 @@ if (usersError) {
 
   S.learners = S.users
     .filter(function(u){
-      return u.role === "student";
-    })
+  return (
+    u.role === "student" &&
+    u.active !== false
+  );
+})
+
     .map(function(u){
       return {
         id: u.id,
