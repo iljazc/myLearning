@@ -1118,28 +1118,45 @@ if (
   }
 
   // Load learners
-  const { data: learnersData, error: learnersError } =
+  const { data: usersData, error: usersError } =
     await sb
-      .from("learners")
+      .from("profiles")
       .select("*");
 
 if (learnersError) {
   console.error("Learners error:", learnersError);
 } else {
 
-  S.learners = (learnersData || []).map(function(l){
-    return Object.assign({}, l, {
-      group: l.learner_group || ""
-    });
+  S.learners = (S.users || [])
+  .filter(function(u){
+    return u.role === "student";
+  })
+  .map(function(u){
+
+    return {
+      id: u.id,
+      name:
+        ((u.first_name || "") +
+        " " +
+        (u.last_name || "")).trim(),
+
+      group: "",
+      learner_group: "",
+
+      units: {},
+      acts: {},
+      tests: {},
+      notes: [],
+
+      email: u.email
+    };
+
   });
 
   S.learnersReady = true;
 }
 
-const { data: usersData, error: usersError } =
-    await sb
-      .from("profiles")
-      .select("*");
+
 
 if(usersError){
   console.error("Users error:", usersError);
